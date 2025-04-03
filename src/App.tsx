@@ -7,7 +7,6 @@ import { MainMenu } from "./component/structure/MainMenu.tsx";
 import { TopLine } from "./component/structure/TopLine.tsx";
 import React, { useRef, useState } from "react";
 import { SortPanel } from "./component/structure/SortPanel.tsx";
-import { TodoNote } from "./component/todo/TodoNote.tsx";
 
 const list1 = v1();
 const list2 = v1();
@@ -447,13 +446,13 @@ const tasksStructure = [
     todoListId: list4,
   },
 ];
-const notesStructure = [
-  {
-    id: v1(),
-    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus consectetur culpa molestiae molestias.",
-    todoListId: list1,
-  },
-];
+// const notesStructure = [
+//   {
+//     id: v1(),
+//     text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus consectetur culpa molestiae molestias.",
+//     todoListId: list1,
+//   },
+// ];
 
 // const [tasks, setTasks] = useState({
 //   [list1]: [
@@ -504,7 +503,7 @@ export const App = () => {
   const [todoLists, setTodoLists] =
     useState<Array<todoListType>>(todoListsStructure);
   const [tasks, setTasks] = useState<Array<taskType>>(tasksStructure);
-  const [notes, setNotes] = useState<Array<noteType>>(notesStructure);
+  // const [notes, setNotes] = useState<Array<noteType>>(notesStructure);
   const [viewTask, setViewTask] = useState<FilterActionType>("all");
 
   const deleteTask = (id: string) => {
