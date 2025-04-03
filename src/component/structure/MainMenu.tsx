@@ -64,7 +64,7 @@ const menuItemsList = {
       icon: <BriefcaseBusiness size={20} />,
       image: null,
       parent: null,
-      isOpen: false,
+      isOpen: true,
       rightInfo: <ChevronDown size={20} />,
       subItems: [
         {
