@@ -1,15 +1,16 @@
 import { InputWrapper, StyledTitle } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoTitle/TodoTitle'
 import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
-import React from 'react'
+import React, { Dispatch, type SetStateAction } from 'react'
 import { ColumnWrapper, StyledTodoItem } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoColumn'
-import { addColumnModeAC } from '@/features/todolists/model/utility-slice'
-import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 
-export const FakeColumn = () => {
-  const dispatch = useAppDispatch()
+type FakeColumn = {
+  setAddColumnMode: Dispatch<SetStateAction<boolean>>
+}
+
+export const FakeColumn = ({ setAddColumnMode }: FakeColumn) => {
   const stopHorizontalScrollOnClickColumn = (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()
   const inputHandler = () => {
-    dispatch(addColumnModeAC({ addColumnMode: false }))
+    setAddColumnMode(false)
   }
   return (
     <ColumnWrapper onMouseDown={stopHorizontalScrollOnClickColumn}>

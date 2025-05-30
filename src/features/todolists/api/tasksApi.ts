@@ -4,7 +4,7 @@ import type { DomainTask, GetTasksResponse, UpdateTaskModel } from '@/features/t
 
 export const tasksApi = {
   getTasks(todoListId: string) {
-    return instance.get<GetTasksResponse>(`/todo-lists/${todoListId}/tasks`)
+    return instance.get<GetTasksResponse>(`/todo-lists/${todoListId}/tasks?count=20`)
   },
   createTask(payload: { todoListId: string; title: string }) {
     return instance.post<BaseResponse<{ item: DomainTask }>>(`/todo-lists/${payload.todoListId}/tasks`, { title: payload.title })

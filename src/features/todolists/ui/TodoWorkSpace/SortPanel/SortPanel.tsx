@@ -3,13 +3,15 @@ import styled from 'styled-components'
 import React, { useEffect, useRef, useState } from 'react'
 import { sortTasksAC } from '@/features/todolists/model/tasks-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { addColumnModeAC, selectViewTask, viewTaskAC } from '@/features/todolists/model/utility-slice'
+import { selectViewTask, viewTaskAC } from '@/features/todolists/model/utility-slice'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
+import { FakeColumn } from '@/features/todolists/ui/TodoWorkSpace/SortPanel/FakeColumn/FakeColumn'
 
 export const SortPanel = () => {
   const dispatch = useAppDispatch()
   const viewTask = useAppSelector(selectViewTask)
 
+  const [addColumnMode, setAddColumnMode] = useState(false)
   const [sortPopup, setSortPopup] = useState(false)
   const [filterPopup, setFilterPopup] = useState(false)
 
@@ -52,46 +54,49 @@ export const SortPanel = () => {
   }
 
   return (
-    <div style={{ flex: '0 0 50px' }} onMouseDown={stopHorizontalScrollOnClickColumn}>
-      <PanelBtnWrapper>
-        <PanelBtn title={'Create new task list'} onClick={() => dispatch(addColumnModeAC({ addColumnMode: true }))}>
-          <CircleFadingPlus size={20} />
-        </PanelBtn>
-      </PanelBtnWrapper>
-      <PanelBtnWrapper>
-        <PanelBtn title={'Sort task list'} className={sortPopup ? 'active' : ''} onClick={sortMenuClickHandler}>
-          <ArrowDownWideNarrow size={20} />
-        </PanelBtn>
-        {sortPopup && (
-          <SubMenu ref={refSort}>
-            <li className={activeSort ? 'active' : ''} onClick={() => sortHandler(true)}>
-              <ArrowDown10 size={20} /> Firstly is done
-            </li>
-            <li className={!activeSort ? 'active' : ''} onClick={() => sortHandler(false)}>
-              <ArrowDown01 size={20} /> Firstly isn`t done
-            </li>
-          </SubMenu>
-        )}
-      </PanelBtnWrapper>
-      <PanelBtnWrapper>
-        <PanelBtn title={'Filter task list'} className={filterPopup ? 'active' : ''} onClick={filterMenuClickHandler}>
-          <Filter size={20} />
-        </PanelBtn>
-        {filterPopup && (
-          <SubMenu ref={refFilter}>
-            <li className={viewTask === 'all' ? 'active' : ''} onClick={() => dispatch(viewTaskAC({ viewTask: 'all' }))}>
-              <SquareMenu size={20} /> All
-            </li>
-            <li className={viewTask === 'completed' ? 'active' : ''} onClick={() => dispatch(viewTaskAC({ viewTask: 'completed' }))}>
-              <SquareCheckBig size={20} /> Completed
-            </li>
-            <li className={viewTask === 'active' ? 'active' : ''} onClick={() => dispatch(viewTaskAC({ viewTask: 'active' }))}>
-              <SquareDashed size={20} /> Active
-            </li>
-          </SubMenu>
-        )}
-      </PanelBtnWrapper>
-    </div>
+    <>
+      <div style={{ flex: '0 0 50px' }} onMouseDown={stopHorizontalScrollOnClickColumn}>
+        <PanelBtnWrapper>
+          <PanelBtn title={'Create new task list'} onClick={() => setAddColumnMode(true)}>
+            <CircleFadingPlus size={20} />
+          </PanelBtn>
+        </PanelBtnWrapper>
+        <PanelBtnWrapper>
+          <PanelBtn title={'Sort task list'} className={sortPopup ? 'active' : ''} onClick={sortMenuClickHandler}>
+            <ArrowDownWideNarrow size={20} />
+          </PanelBtn>
+          {sortPopup && (
+            <SubMenu ref={refSort}>
+              <li className={activeSort ? 'active' : ''} onClick={() => sortHandler(true)}>
+                <ArrowDown10 size={20} /> Firstly is done
+              </li>
+              <li className={!activeSort ? 'active' : ''} onClick={() => sortHandler(false)}>
+                <ArrowDown01 size={20} /> Firstly isn`t done
+              </li>
+            </SubMenu>
+          )}
+        </PanelBtnWrapper>
+        <PanelBtnWrapper>
+          <PanelBtn title={'Filter task list'} className={filterPopup ? 'active' : ''} onClick={filterMenuClickHandler}>
+            <Filter size={20} />
+          </PanelBtn>
+          {filterPopup && (
+            <SubMenu ref={refFilter}>
+              <li className={viewTask === 'all' ? 'active' : ''} onClick={() => dispatch(viewTaskAC({ viewTask: 'all' }))}>
+                <SquareMenu size={20} /> All
+              </li>
+              <li className={viewTask === 'completed' ? 'active' : ''} onClick={() => dispatch(viewTaskAC({ viewTask: 'completed' }))}>
+                <SquareCheckBig size={20} /> Completed
+              </li>
+              <li className={viewTask === 'active' ? 'active' : ''} onClick={() => dispatch(viewTaskAC({ viewTask: 'active' }))}>
+                <SquareDashed size={20} /> Active
+              </li>
+            </SubMenu>
+          )}
+        </PanelBtnWrapper>
+      </div>
+      {addColumnMode && <FakeColumn setAddColumnMode={setAddColumnMode} />}
+    </>
   )
 }
 

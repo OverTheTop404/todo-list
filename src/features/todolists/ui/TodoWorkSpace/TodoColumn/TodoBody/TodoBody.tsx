@@ -18,10 +18,14 @@ type Props = {
 
 export const TodoBody = ({ todoInfo }: Props) => {
   const dispatch = useAppDispatch()
-  useEffect(() => {
-    dispatch(fetchTaskTC(todoInfo.id))
-  }, [])
+
   const tasks = useAppSelector(selectTasks)
+  const isFetched = tasks.some((task) => task.todoListId === todoInfo.id)
+
+  useEffect(() => {
+    !isFetched && dispatch(fetchTaskTC(todoInfo.id))
+  }, [])
+
   const viewTask = useAppSelector(selectViewTask)
 
   let filteredTasksCopy = tasks
