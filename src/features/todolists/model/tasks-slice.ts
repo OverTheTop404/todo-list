@@ -4,6 +4,8 @@ import { createAppSlice } from '@/common/utils'
 import { changeEntityStatus, deleteTodoTC, modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
 import { type RequestStatus, setNoticeAC } from '@/app/app-slice'
 import { ResultCode } from '@/common/enums/enams'
+import { handleServerNetworkError } from '@/common/utils/handleServerNetworkError'
+import { handleServerAppError } from '@/common/utils/handleServerAppError'
 
 const modelCreator = (args: UpdateTaskModel) => {
   return {
@@ -43,13 +45,21 @@ export const tasksSlice = createAppSlice({
         try {
           dispatch(changeEntityTaskStatusAC({ taskId: args.id, status: 'loading' }))
           const res = await tasksApi.updateTask({ todolistId: args.todoListId, taskId: args.id, model: modelCreator(args) })
-          dispatch(changeEntityTaskStatusAC({ taskId: args.id, status: 'succeeded' }))
           dispatch(renameTaskModeAC({ taskId: args.id, mode: false }))
-          dispatch(setNoticeAC({ noticeMessage: 'Success update task', noticeType: 'success' }))
-          return res.data
+          if (res.data.resultCode === ResultCode.Success) {
+            dispatch(setNoticeAC({ noticeMessage: `Success update task «${res.data.data.item.title}»`, noticeType: 'success' }))
+            dispatch(changeEntityTaskStatusAC({ taskId: args.id, status: 'succeeded' }))
+            return res.data
+          } else {
+            dispatch(changeEntityTaskStatusAC({ taskId: args.id, status: 'failed' }))
+            handleServerAppError(res.data, dispatch)
+            return rejectWithValue(null)
+          }
+          //return res.data
         } catch (error: any) {
+          dispatch(renameTaskModeAC({ taskId: args.id, mode: false }))
           dispatch(changeEntityTaskStatusAC({ taskId: args.id, status: 'failed' }))
-          dispatch(setNoticeAC({ noticeMessage: error.message || 'Error update task', noticeType: 'error' }))
+          handleServerNetworkError(error, dispatch)
           return rejectWithValue(error)
         }
       },
@@ -69,8 +79,8 @@ export const tasksSlice = createAppSlice({
           dispatch(changeEntityTaskStatusAC({ taskId: args.taskId, status: 'succeeded' }))
           return args.taskId
         } catch (error: any) {
-          dispatch(setNoticeAC({ noticeMessage: error.message || 'Failed delete task', noticeType: 'error' }))
           dispatch(changeEntityTaskStatusAC({ taskId: args.taskId, status: 'failed' }))
+          handleServerNetworkError(error, dispatch)
           return rejectWithValue(error)
         }
       },
@@ -87,9 +97,11 @@ export const tasksSlice = createAppSlice({
           dispatch(changeEntityStatus({ todolistId: args, status: 'loading' }))
           const res = await tasksApi.getTasks(args)
           dispatch(changeEntityStatus({ todolistId: args, status: 'succeeded' }))
+          console.log(res.request)
           return { tasksList: res.data.items }
         } catch (error) {
           dispatch(changeEntityStatus({ todolistId: args, status: 'failed' }))
+          handleServerNetworkError(error, dispatch)
           return rejectWithValue(error)
         }
       },
@@ -109,16 +121,12 @@ export const tasksSlice = createAppSlice({
             dispatch(setNoticeAC({ noticeMessage: `Success create task «${res.data.data.item.title}»`, noticeType: 'success' }))
             return res.data
           } else {
-            if (res.data.messages.length) {
-              dispatch(setNoticeAC({ noticeMessage: `${res.data.messages[0]}`, noticeType: 'error' }))
-            } else {
-              dispatch(setNoticeAC({ noticeMessage: 'Failed create task. Some error occurred', noticeType: 'error' }))
-            }
+            handleServerAppError(res.data, dispatch)
             return rejectWithValue(null)
           }
         } catch (error: any) {
           dispatch(modeAddTaskAC({ status: false, todoListId: args.todoListId }))
-          dispatch(setNoticeAC({ noticeMessage: error.message, noticeType: 'error' }))
+          handleServerNetworkError(error, dispatch)
           return rejectWithValue(error)
         }
       },

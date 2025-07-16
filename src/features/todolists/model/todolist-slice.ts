@@ -3,6 +3,8 @@ import { todoListsApi } from '@/features/todolists/api/todoListsApi'
 import { createAppSlice } from '@/common/utils'
 import { loaderStatusAC, type RequestStatus, setNoticeAC } from '@/app/app-slice'
 import { ResultCode } from '@/common/enums/enams'
+import { handleServerNetworkError } from '@/common/utils/handleServerNetworkError'
+import { handleServerAppError } from '@/common/utils/handleServerAppError'
 
 export type DomainTodoLists = TodoListType & {
   headLineColor: string
@@ -42,15 +44,22 @@ export const todoListsSlice = createAppSlice({
       async (args: { title: string; todolistId: string }, { rejectWithValue, dispatch }) => {
         try {
           dispatch(changeEntityStatus({ todolistId: args.todolistId, status: 'loading' }))
-          await todoListsApi.renameTodoList({ ...args })
-          dispatch(renameTodoModeAC({ todoListId: args.todolistId, mode: false }))
-          dispatch(changeEntityStatus({ todolistId: args.todolistId, status: 'succeeded' }))
-          dispatch(setNoticeAC({ noticeMessage: 'Success update todolist', noticeType: 'success' }))
-          return args
+          const res = await todoListsApi.renameTodoList({ ...args })
+          if (res.data.resultCode === ResultCode.Success) {
+            dispatch(changeEntityStatus({ todolistId: args.todolistId, status: 'succeeded' }))
+            dispatch(setNoticeAC({ noticeMessage: 'Success update todolist', noticeType: 'success' }))
+            return args
+          } else {
+            dispatch(changeEntityStatus({ todolistId: args.todolistId, status: 'failed' }))
+            handleServerAppError(res.data, dispatch)
+            return rejectWithValue(null)
+          }
         } catch (error) {
-          dispatch(setNoticeAC({ noticeMessage: 'Error update todolist', noticeType: 'error' }))
           dispatch(changeEntityStatus({ todolistId: args.todolistId, status: 'failed' }))
+          handleServerNetworkError(error, dispatch)
           return rejectWithValue(error)
+        } finally {
+          dispatch(renameTodoModeAC({ todoListId: args.todolistId, mode: false }))
         }
       },
       {
@@ -70,7 +79,7 @@ export const todoListsSlice = createAppSlice({
           return args.id
         } catch (error) {
           dispatch(changeEntityStatus({ todolistId: args.id, status: 'failed' }))
-          dispatch(setNoticeAC({ noticeMessage: 'Failed delete todolist', noticeType: 'error' }))
+          handleServerNetworkError(error, dispatch)
           return rejectWithValue(error)
         }
       },
@@ -85,20 +94,18 @@ export const todoListsSlice = createAppSlice({
       async (args: { letterTrim: string }, { rejectWithValue, dispatch }) => {
         try {
           const res = await todoListsApi.addTodoList(args.letterTrim)
-          dispatch(modeAddTodoAC({ status: false }))
           if (res.data.resultCode === ResultCode.Success) {
             dispatch(setNoticeAC({ noticeMessage: `Success create todolist «${res.data.data.item.title}»`, noticeType: 'success' }))
             return res.data
           } else {
-            if (res.data.messages.length) {
-              dispatch(setNoticeAC({ noticeMessage: `${res.data.messages[0]}`, noticeType: 'error' }))
-            } else {
-              dispatch(setNoticeAC({ noticeMessage: 'Failed create todolist. Some error occurred', noticeType: 'error' }))
-            }
+            handleServerAppError(res.data, dispatch)
             return rejectWithValue(null)
           }
         } catch (error) {
+          handleServerNetworkError(error, dispatch)
           return rejectWithValue(error)
+        } finally {
+          dispatch(modeAddTodoAC({ status: false }))
         }
       },
       {
@@ -118,15 +125,16 @@ export const todoListsSlice = createAppSlice({
     ),
     fetchTodoListsTC: create.asyncThunk(
       async (_, { rejectWithValue, dispatch }) => {
-        const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+        //const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
         try {
           dispatch(loaderStatusAC({ status: 'loading' }))
-          await delay(2000)
+          //await delay(2000)
           const res = await todoListsApi.getTodoLists()
           dispatch(loaderStatusAC({ status: 'idle' }))
           return { todoLists: res.data }
         } catch (error) {
           dispatch(loaderStatusAC({ status: 'failed' }))
+          handleServerNetworkError(error, dispatch)
           return rejectWithValue(error)
         }
       },
