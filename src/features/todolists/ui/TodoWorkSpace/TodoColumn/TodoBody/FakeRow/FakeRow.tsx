@@ -8,15 +8,20 @@ import {
   StyledRow,
   SubMenuWrapper,
 } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TaskRow/TaskRow'
+import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+import { modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
+import { useState } from 'react'
+import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
 
 type FakeRowProps = {
   todoListId: string
-  toggleTaskMode?: (value: boolean) => void
 }
 
-export const FakeRow = ({ todoListId, toggleTaskMode }: FakeRowProps) => {
+export const FakeRow = ({ todoListId }: FakeRowProps) => {
+  const dispatch = useAppDispatch()
+  const [switchLoader, setSwitchLoader] = useState(false)
   const inputHandler = () => {
-    toggleTaskMode && toggleTaskMode(false)
+    dispatch(modeAddTaskAC({ status: false, todoListId }))
   }
 
   return (
@@ -25,7 +30,7 @@ export const FakeRow = ({ todoListId, toggleTaskMode }: FakeRowProps) => {
         <StyledInput type={'checkbox'} checked={false} />
         <InputLabel />
         <InputWrapper>
-          <Input todoListId={todoListId} title={''} inputHandler={inputHandler} renameHandler={() => {}} />
+          <Input todoListId={todoListId} title={''} inputHandler={inputHandler} renameHandler={() => {}} switchLoader={setSwitchLoader} />
         </InputWrapper>
       </TitleWrapper>
       <PanelTitle>
@@ -33,6 +38,7 @@ export const FakeRow = ({ todoListId, toggleTaskMode }: FakeRowProps) => {
           <EllipsisVertical size={20} />
         </SubMenuWrapper>
       </PanelTitle>
+      {switchLoader && <EntityStatus entity={'task'} />}
     </StyledRow>
   )
 }

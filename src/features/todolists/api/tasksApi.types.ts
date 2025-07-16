@@ -1,6 +1,6 @@
 import { type TaskPriority, TaskStatus } from '@/common/enums/enams'
 
-export type DomainTask = {
+export type TaskType = {
   id: string
   title: string
   description: string
@@ -16,7 +16,7 @@ export type DomainTask = {
 export type GetTasksResponse = {
   error: string | null
   totalCount: number
-  items: DomainTask[]
+  items: TaskType[]
 }
 
 export type UpdateTaskModel = {

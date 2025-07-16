@@ -2,16 +2,10 @@ import styled from 'styled-components'
 import domWrap from '../assets/images/domik-wrap.jpg'
 import { MainMenu } from '@/common/components/MainMenu/MainMenu'
 import { TopLine } from '@/common/components/TopLine/TopLine'
-import { Navigate, Route, Routes } from 'react-router'
-import { TodoWorkSpace } from '@/features/todolists/ui/TodoWorkSpace/TodoWorkSpace'
-import { MyTasks } from '@/features/mytasks/ui/MyTasks/MyTasks'
-import { OtherTasks } from '@/features/othertasks/ui/OtherTasks/OtherTasks'
-import { MyCompany } from '@/features/mycompany/ui/MyCompany/MyCompany'
-import { News } from '@/features/news/ui/News/News'
-import { Reports } from '@/features/reports/ui/Reports/Reports'
-import { License } from '@/features/license/ui/License/License'
-import { Support } from '@/features/support/ui/Support/Support'
-import { withDraggableScroll } from '@/common/hocs/withDraggableScroll'
+import { Routing } from '@/common/routing/Routing'
+import { AlertSnackbar } from '@/common/components/AlertSnackbar/AlertSnackbar'
+import { useAppSelector } from '@/common/hooks/useAppSelector'
+import { selectNotice } from '@/app/app-slice'
 
 export const App = () => {
   // const themeMode = useAppSelector(selectThemeMode);
@@ -20,28 +14,16 @@ export const App = () => {
   //   dispatch(changeThemeModeAC({ themeMode: themeMode === "light" ? "dark" : "light" }));
   // };
 
-  const WithScroll = withDraggableScroll(TodoWorkSpace)
+  const noticeEntity = useAppSelector(selectNotice)
 
   return (
     <Application>
       <MainMenu />
       <WorkSpace>
         <TopLine />
-        <Routes>
-          <Route path={'/'} element={<Navigate to={'/rocketweb'} />} />
-          <Route path={'/my-tasks'} element={<MyTasks />} />
-          <Route path={'/other-tasks'} element={<OtherTasks />} />
-          <Route path={'/daily-tasks'} element={<WithScroll />} />
-          <Route path={'/armoglaze'} element={<WithScroll />} />
-          <Route path={'/rocketweb'} element={<WithScroll />} />
-          <Route path={'/my-company'} element={<MyCompany />} />
-          <Route path={'/news'} element={<News />} />
-          <Route path={'/reports'} element={<Reports />} />
-          <Route path={'/license'} element={<License />} />
-          <Route path={'/support'} element={<Support />} />
-          <Route path={'/*'} element={<Support />} />
-        </Routes>
+        <Routing />
       </WorkSpace>
+      {noticeEntity.noticeMessage && <AlertSnackbar noticeEntity={noticeEntity} />}
     </Application>
   )
 }

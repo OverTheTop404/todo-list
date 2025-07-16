@@ -6,12 +6,13 @@ import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { selectViewTask, viewTaskAC } from '@/features/todolists/model/utility-slice'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
 import { FakeColumn } from '@/features/todolists/ui/TodoWorkSpace/SortPanel/FakeColumn/FakeColumn'
+import { modeAddTodoAC, selectHasModeAddTodo } from '@/features/todolists/model/todolist-slice'
 
 export const SortPanel = () => {
   const dispatch = useAppDispatch()
   const viewTask = useAppSelector(selectViewTask)
+  const hasTodoMode = useAppSelector(selectHasModeAddTodo)
 
-  const [addColumnMode, setAddColumnMode] = useState(false)
   const [sortPopup, setSortPopup] = useState(false)
   const [filterPopup, setFilterPopup] = useState(false)
 
@@ -57,7 +58,7 @@ export const SortPanel = () => {
     <>
       <div style={{ flex: '0 0 50px' }} onMouseDown={stopHorizontalScrollOnClickColumn}>
         <PanelBtnWrapper>
-          <PanelBtn title={'Create new task list'} onClick={() => setAddColumnMode(true)}>
+          <PanelBtn title={'Create new task list'} onClick={() => dispatch(modeAddTodoAC({ status: true }))}>
             <CircleFadingPlus size={20} />
           </PanelBtn>
         </PanelBtnWrapper>
@@ -95,7 +96,7 @@ export const SortPanel = () => {
           )}
         </PanelBtnWrapper>
       </div>
-      {addColumnMode && <FakeColumn setAddColumnMode={setAddColumnMode} />}
+      {hasTodoMode && <FakeColumn />}
     </>
   )
 }

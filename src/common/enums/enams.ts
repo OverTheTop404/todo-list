@@ -12,3 +12,15 @@ export enum TaskPriority {
   Urgently = 3,
   Later = 4,
 }
+
+export enum TasksPortion {
+  Ten = 10,
+  Twenty = 20,
+  Thirty = 30,
+}
+
+export enum ResultCode {
+  Success = 0,
+  Error = 1,
+  CaptchaError = 10,
+}

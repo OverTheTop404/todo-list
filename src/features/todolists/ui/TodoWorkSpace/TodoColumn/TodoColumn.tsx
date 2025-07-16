@@ -1,27 +1,25 @@
 import styled from 'styled-components'
 import { TodoTitle } from './TodoTitle/TodoTitle.tsx'
-import React, { useState } from 'react'
+import React from 'react'
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { TodoBody } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TodoBody'
 import type { DomainTodoLists } from '@/features/todolists/model/todolist-slice'
+import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
 
 type TodoItemProps = {
   todoInfo: DomainTodoLists
 }
 
 export const TodoColumn = ({ todoInfo }: TodoItemProps) => {
-  const [renameStatus, setRenameStatus] = useState<boolean>(false)
-  const renameStatusHandler = (value: boolean) => setRenameStatus(value)
-
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: todoInfo.id,
     data: {
       type: 'Column',
       todoInfo,
     },
-    disabled: renameStatus,
+    disabled: todoInfo.renameStatus,
   })
   const style = {
     transition,
@@ -38,13 +36,11 @@ export const TodoColumn = ({ todoInfo }: TodoItemProps) => {
     backgroundColor: 'rgba(31, 31, 31, .6)',
   }
 
-  // const tasksId = useMemo(() => tasksList.map((task) => task.id), [tasksList]);
-
   if (isDragging) {
     return (
       <ColumnWrapper ref={setNodeRef} style={{ ...style, ...dragStyle }}>
         <StyledTodoItem style={{ opacity: 0 }}>
-          <TodoTitle todoInfo={todoInfo} renameStatus={renameStatus} renameStatusHandler={renameStatusHandler} />
+          <TodoTitle todoInfo={todoInfo} />
           <TodoBody todoInfo={todoInfo} />
         </StyledTodoItem>
       </ColumnWrapper>
@@ -58,14 +54,16 @@ export const TodoColumn = ({ todoInfo }: TodoItemProps) => {
   return (
     <ColumnWrapper onMouseDown={stopHorizontalScrollOnClickColumn} ref={setNodeRef} style={style}>
       <StyledTodoItem style={{ ...subStyle }} {...listeners} {...attributes}>
-        <TodoTitle todoInfo={todoInfo} renameStatus={renameStatus} renameStatusHandler={renameStatusHandler} />
+        <TodoTitle todoInfo={todoInfo} />
         <TodoBody todoInfo={todoInfo} />
       </StyledTodoItem>
+      {todoInfo.entityStatus === 'loading' && <EntityStatus />}
     </ColumnWrapper>
   )
 }
 
 export const StyledTodoItem = styled.div`
+  position: relative;
   width: 100%;
   border-radius: 4px;
   box-shadow: 0 0 5px 0;

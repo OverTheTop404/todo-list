@@ -4,16 +4,20 @@ import { AlignRight, Palette, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
 import { HexColorPicker } from 'react-colorful'
-import { changeHeadLineColorAC, deleteTodoTC, type DomainTodoLists, renameTodoTC } from '@/features/todolists/model/todolist-slice.ts'
+import {
+  changeHeadLineColorAC,
+  deleteTodoTC,
+  type DomainTodoLists,
+  renameTodoModeAC,
+  renameTodoTC,
+} from '@/features/todolists/model/todolist-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 
 type TodoTitleProps = {
-  renameStatus: boolean
-  renameStatusHandler: (value: boolean) => void
   todoInfo: DomainTodoLists
 }
 
-export const TodoTitle = ({ renameStatus, renameStatusHandler, todoInfo }: TodoTitleProps) => {
+export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
   const dispatch = useAppDispatch()
   const { id, title, headLineColor } = todoInfo
 
@@ -44,7 +48,7 @@ export const TodoTitle = ({ renameStatus, renameStatusHandler, todoInfo }: TodoT
   }, [])
 
   const inputHandler = () => {
-    renameStatusHandler(false)
+    dispatch(renameTodoModeAC({ todoListId: todoInfo.id, mode: false }))
   }
 
   const renameHandler = (title: string) => {
@@ -54,12 +58,17 @@ export const TodoTitle = ({ renameStatus, renameStatusHandler, todoInfo }: TodoT
   const titlePencilHandler = () => {
     setShowColorPicker(false)
     setShowPopup(false)
-    renameStatusHandler(true)
+    dispatch(renameTodoModeAC({ todoListId: todoInfo.id, mode: true }))
+  }
+
+  const deleteHandler = () => {
+    setShowPopup(false)
+    dispatch(deleteTodoTC({ id }))
   }
 
   return (
     <StyledTitle style={{ borderTop: `5px solid ${headLineColor ? headLineColor : '#1ac517'}` }}>
-      {renameStatus || title === '' ? (
+      {todoInfo.renameStatus || title === '' ? (
         <InputWrapper>
           <Input title={title} inputHandler={inputHandler} renameHandler={renameHandler} />
         </InputWrapper>
@@ -85,7 +94,7 @@ export const TodoTitle = ({ renameStatus, renameStatusHandler, todoInfo }: TodoT
               <li onClick={titlePencilHandler}>
                 <Pencil size={20} /> Rename
               </li>
-              <li onClick={() => dispatch(deleteTodoTC({ id }))}>
+              <li onClick={() => deleteHandler()}>
                 <Trash2 size={20} /> Delete
               </li>
             </SubMenu>

@@ -4,36 +4,34 @@ import { BadgePlus } from 'lucide-react'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
 
 import styled from 'styled-components'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { FakeRow } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/FakeRow/FakeRow'
 import { fetchTaskTC, selectTasks } from '@/features/todolists/model/tasks-slice'
-import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { selectViewTask } from '@/features/todolists/model/utility-slice'
 import { TaskStatus } from '@/common/enums/enams'
+import { type DomainTodoLists, modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
 
 type Props = {
-  todoInfo: TodoListType
+  todoInfo: DomainTodoLists
 }
 
 export const TodoBody = ({ todoInfo }: Props) => {
   const dispatch = useAppDispatch()
 
   const tasks = useAppSelector(selectTasks)
-  const isFetched = tasks.some((task) => task.todoListId === todoInfo.id)
+  const viewTask = useAppSelector(selectViewTask)
+
+  // const isFetched = tasks.some((task) => task.todoListId === todoInfo.id)
 
   useEffect(() => {
-    !isFetched && dispatch(fetchTaskTC(todoInfo.id))
+    // @ts-ignore
+    !tasks.length && dispatch(fetchTaskTC(todoInfo.id))
   }, [])
-
-  const viewTask = useAppSelector(selectViewTask)
 
   let filteredTasksCopy = tasks
   if (viewTask === 'active') filteredTasksCopy = tasks.filter((item) => item.status === TaskStatus.New)
   if (viewTask === 'completed') filteredTasksCopy = tasks.filter((item) => item.status === TaskStatus.Completed)
-
-  const [addTaskMode, setAddTaskMode] = useState(false)
-  const toggleTaskMode = (value: boolean) => setAddTaskMode(value)
 
   const taskForThisColumn = filteredTasksCopy.filter((task) => task.todoListId === todoInfo.id)
   return (
@@ -46,11 +44,11 @@ export const TodoBody = ({ todoInfo }: Props) => {
             })}
           </SortableContext>
         ) : (
-          <p style={{ marginBottom: `${addTaskMode ? '10px' : '0'}` }}>There are no tasks</p>
+          <p style={{ marginBottom: `${todoInfo.addTaskStatus ? '10px' : '0'}` }}>There are no tasks</p>
         )}
-        {addTaskMode && <FakeRow todoListId={todoInfo.id} toggleTaskMode={toggleTaskMode} />}
+        {todoInfo.addTaskStatus && <FakeRow todoListId={todoInfo.id} />}
       </StyledTodoBody>
-      <AddNewTaskBtn onClick={() => toggleTaskMode(true)}>
+      <AddNewTaskBtn onClick={() => dispatch(modeAddTaskAC({ status: true, todoListId: todoInfo.id }))}>
         <BadgePlus size={15} /> New task
       </AddNewTaskBtn>
     </>

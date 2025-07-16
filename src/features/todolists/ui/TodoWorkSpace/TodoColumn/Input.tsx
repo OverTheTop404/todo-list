@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { ChangeEvent, KeyboardEvent, useRef, useState } from 'react'
+import { ChangeEvent, type Dispatch, KeyboardEvent, type SetStateAction, useRef, useState } from 'react'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { addTodoListsTC } from '@/features/todolists/model/todolist-slice.ts'
 import { addTaskTC } from '@/features/todolists/model/tasks-slice.ts'
@@ -10,9 +10,10 @@ type Props = {
   placeholder?: string
   inputHandler: () => void
   renameHandler: (title: string) => void
+  switchLoader?: Dispatch<SetStateAction<boolean>>
 }
 
-export const Input = ({ todoListId, title, placeholder, inputHandler, renameHandler }: Props) => {
+export const Input = ({ todoListId, title, placeholder, inputHandler, renameHandler, switchLoader }: Props) => {
   const dispatch = useAppDispatch()
 
   const ref = useRef<HTMLInputElement | null>(null)
@@ -25,20 +26,15 @@ export const Input = ({ todoListId, title, placeholder, inputHandler, renameHand
   }
 
   const keyPressHandler = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      inputHandler()
-    }
-    if (e.key === 'Enter' && letterTrim.length && title === '') {
-      todoListId ? dispatch(addTaskTC({ todoListId, title: letterTrim })) : dispatch(addTodoListsTC({ letterTrim }))
-    }
-    if (e.key === 'Enter' && title?.length && letterTrim.length && title !== letterTrim) {
-      renameHandler(letterTrim)
-    }
+    if (e.key === 'Enter' && ref.current) ref.current.blur()
   }
 
   const onBlurInputHandler = () => {
-    inputHandler()
+    if (!letterTrim.length || title === letterTrim) {
+      inputHandler()
+    }
     if (letterTrim.length && title === '') {
+      switchLoader && switchLoader(true)
       todoListId ? dispatch(addTaskTC({ todoListId, title: letterTrim })) : dispatch(addTodoListsTC({ letterTrim }))
     }
     if (title?.length && letterTrim.length && title !== letterTrim) {

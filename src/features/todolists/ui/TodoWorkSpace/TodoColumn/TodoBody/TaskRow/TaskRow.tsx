@@ -5,10 +5,10 @@ import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
 import { useEffect, useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { changeTaskStatusTC, deleteTaskTC, renameTaskTC } from '@/features/todolists/model/tasks-slice.ts'
+import { deleteTaskTC, type DomainTask, renameTaskModeAC, updateTaskTC } from '@/features/todolists/model/tasks-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import type { DomainTask, UpdateTaskModel } from '@/features/todolists/api/tasksApi.types'
 import { TaskStatus } from '@/common/enums/enams'
+import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
 
 type StyledInputProps = {
   taskInfo: DomainTask
@@ -16,7 +16,6 @@ type StyledInputProps = {
 
 export const TaskRow = ({ taskInfo }: StyledInputProps) => {
   const dispatch = useAppDispatch()
-  const [renameStatus, setRenameStatus] = useState<boolean>(false)
 
   const [showPopup, setShowPopup] = useState(false)
 
@@ -35,37 +34,23 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
     }
   }, [])
 
-  const inputHandler = () => {
-    setRenameStatus(false)
-  }
-
   const renameHandler = (title: string) => {
-    const model: UpdateTaskModel = {
-      description: taskInfo.description,
-      status: taskInfo.status,
-      priority: taskInfo.priority,
-      startDate: taskInfo.startDate,
-      deadline: taskInfo.deadline,
-      title,
-    }
-    dispatch(renameTaskTC({ taskId: taskInfo.id, todolistId: taskInfo.todoListId, model }))
+    dispatch(updateTaskTC({ ...taskInfo, title: title }))
   }
 
   const changeTaskStatusHandler = () => {
-    const model: UpdateTaskModel = {
-      description: taskInfo.description,
-      title: taskInfo.title,
-      priority: taskInfo.priority,
-      startDate: taskInfo.startDate,
-      deadline: taskInfo.deadline,
-      status: taskInfo.status === TaskStatus.New ? TaskStatus.Completed : TaskStatus.New,
-    }
-    dispatch(changeTaskStatusTC({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model }))
+    const newStatus = taskInfo.status === TaskStatus.New ? TaskStatus.Completed : TaskStatus.New
+    dispatch(updateTaskTC({ ...taskInfo, status: newStatus }))
   }
 
   const titlePencilHandler = () => {
     setShowPopup(false)
-    setRenameStatus(true)
+    dispatch(renameTaskModeAC({ taskId: taskInfo.id, mode: true }))
+  }
+
+  const deleteTaskHandler = () => {
+    setShowPopup(false)
+    dispatch(deleteTaskTC({ todolistId: taskInfo.todoListId, taskId: taskInfo.id }))
   }
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -74,7 +59,7 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
       type: 'Task',
       taskInfo,
     },
-    disabled: renameStatus,
+    disabled: taskInfo.renameStatus,
     // animateLayoutChanges,
   })
   const style = {
@@ -121,17 +106,17 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
       {...attributes}
       style={style}
     >
-      {renameStatus ? (
+      {taskInfo.renameStatus ? (
         <TitleWrapper className={'edit'}>
-          <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} disabled={renameStatus} />
+          <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} />
           <InputLabel />
           <InputWrapper>
-            <Input title={taskInfo.title} inputHandler={inputHandler} renameHandler={renameHandler} />
+            <Input title={taskInfo.title} inputHandler={() => {}} renameHandler={renameHandler} />
           </InputWrapper>
         </TitleWrapper>
       ) : (
         <TitleWrapper>
-          <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} disabled={renameStatus} />
+          <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} />
           <InputLabel onClick={() => changeTaskStatusHandler()}></InputLabel>
           <div>
             <LabelText onClick={() => changeTaskStatusHandler()}>{taskInfo.title}</LabelText>
@@ -147,13 +132,14 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
               <li onClick={titlePencilHandler}>
                 <Pencil size={20} /> Rename
               </li>
-              <li onClick={() => dispatch(deleteTaskTC({ todolistId: taskInfo.todoListId, taskId: taskInfo.id }))}>
+              <li onClick={() => deleteTaskHandler()}>
                 <Trash2 size={20} /> Delete
               </li>
             </SubMenu>
           )}
         </SubMenuWrapper>
       </PanelTitle>
+      {taskInfo.entityStatus === 'loading' && <EntityStatus entity={'task'} />}
     </StyledRow>
   )
 }
