@@ -1,8 +1,11 @@
 import React, { type ComponentType, useRef, useState } from 'react'
 import styled from 'styled-components'
+import { useAppSelector } from '@/common/hooks/useAppSelector'
+import { selectLoaderStatus } from '@/app/app-slice'
 
 export const withDraggableScroll = <P extends object>(WrappedComponent: ComponentType<P>) => {
   return (props: P) => {
+    const loaderStatus = useAppSelector(selectLoaderStatus)
     const scrollRef = useRef<HTMLDivElement | null>(null)
     const [isDraggingScreen, setIsDraggingScreen] = useState<boolean>(false)
     const [startX, setStartX] = useState<number>(0)
@@ -18,7 +21,7 @@ export const withDraggableScroll = <P extends object>(WrappedComponent: Componen
     const handleMouseLeave = () => setIsDraggingScreen(false)
     const handleMouseUp = () => setIsDraggingScreen(false)
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!isDraggingScreen || !scrollRef.current) return
+      if (!isDraggingScreen || !scrollRef.current || loaderStatus === 'loading') return
       e.preventDefault()
       const x = e.pageX - scrollRef.current.offsetLeft
       const walk = x - startX // Скорость прокрутки
