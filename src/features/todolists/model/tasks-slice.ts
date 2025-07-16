@@ -20,7 +20,7 @@ const modelCreator = (args: UpdateTaskModel) => {
 
 export type DomainTask = TaskType & {
   renameStatus: boolean
-  entityStatus: RequestStatus
+  entityStatus: string // Временно string. Надо RequestStatus
 }
 
 export const tasksSlice = createAppSlice({
@@ -97,7 +97,6 @@ export const tasksSlice = createAppSlice({
           dispatch(changeEntityStatus({ todolistId: args, status: 'loading' }))
           const res = await tasksApi.getTasks(args)
           dispatch(changeEntityStatus({ todolistId: args, status: 'succeeded' }))
-          console.log(res.request)
           return { tasksList: res.data.items }
         } catch (error) {
           dispatch(changeEntityStatus({ todolistId: args, status: 'failed' }))
