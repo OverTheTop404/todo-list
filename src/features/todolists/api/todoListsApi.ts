@@ -1,13 +1,13 @@
 import { instance } from '@/common/instance'
-import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
+import type { DomainTodoLists } from '@/features/todolists/api/todoListsApi.types'
 import type { BaseResponse } from '@/common/types/types'
 
 export const todoListsApi = {
   getTodoLists() {
-    return instance.get<TodoListType[]>('/todo-lists')
+    return instance.get<DomainTodoLists[]>('/todo-lists')
   },
   addTodoList(title: string) {
-    return instance.post<BaseResponse<{ item: TodoListType }>>('/todo-lists', { title })
+    return instance.post<BaseResponse<{ item: DomainTodoLists }>>('/todo-lists', { title })
   },
   deleteTodoList(todolistId: string) {
     return instance.delete<BaseResponse>(`/todo-lists/${todolistId}`)

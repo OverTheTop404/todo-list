@@ -1,17 +1,16 @@
-import { toast, ToastContainer, type TypeOptions } from 'react-toastify'
+import { ToastContainer, toast } from 'react-toastify/unstyled'
+import 'react-toastify/ReactToastify.css'
+import { useAppSelector } from '@/common/hooks/useAppSelector'
+import { selectNotice } from '@/app/app-slice'
 
-type Props = {
-  noticeEntity: {
-    noticeMessage: null | string
-    noticeType: TypeOptions
-  }
-}
+export const AlertSnackbar = () => {
+  const noticeEntity = useAppSelector(selectNotice)
 
-export const AlertSnackbar = ({ noticeEntity }: Props) => {
   toast(noticeEntity.noticeMessage, {
     type: noticeEntity.noticeType,
     autoClose: 2000,
+    position: 'bottom-right',
   })
 
-  return <ToastContainer autoClose={2000} customProgressBar={false} position={'bottom-right'} />
+  return <ToastContainer />
 }

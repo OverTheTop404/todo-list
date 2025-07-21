@@ -213,7 +213,7 @@ const SubMenu = styled.ul`
     }
   }
 `
-const LabelText = styled.span`
+export const LabelText = styled.span`
   font-size: 17px;
   &:hover {
     cursor: pointer;

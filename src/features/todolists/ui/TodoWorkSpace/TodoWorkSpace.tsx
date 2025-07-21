@@ -4,14 +4,14 @@ import { useEffect } from 'react'
 import { useAppSelector } from '@/common/hooks/useAppSelector.ts'
 import { fetchTodoListsTC, selectTodoLists } from '@/features/todolists/model/todolist-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { AppLoader } from '@/common/components/AppLoader/AppLoader'
 
 export const TodoWorkSpace = () => {
   const dispatch = useAppDispatch()
+  const todoLists = useAppSelector(selectTodoLists)
+
   useEffect(() => {
     dispatch(fetchTodoListsTC())
   }, [])
-  const todoLists = useAppSelector(selectTodoLists)
 
   // BOF dnd-kit
   // const [activeColumn, setActiveColumn] = useState<DomainTodoLists | null>(null)
@@ -91,10 +91,10 @@ export const TodoWorkSpace = () => {
   return (
     <>
       <SortPanel />
-      <AppLoader />
       {todoLists.map((column) => (
         <TodoColumn key={column.id} todoInfo={column} />
       ))}
+
       {/*<DndContext*/}
       {/*  sensors={sensors}*/}
       {/*  // collisionDetection={closestCorners}*/}

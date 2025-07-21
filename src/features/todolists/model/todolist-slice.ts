@@ -1,12 +1,13 @@
-import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
+import type { DomainTodoLists } from '@/features/todolists/api/todoListsApi.types'
 import { todoListsApi } from '@/features/todolists/api/todoListsApi'
 import { createAppSlice } from '@/common/utils'
 import { loaderStatusAC, type RequestStatus, setNoticeAC } from '@/app/app-slice'
 import { ResultCode } from '@/common/enums/enams'
 import { handleServerNetworkError } from '@/common/utils/handleServerNetworkError'
 import { handleServerAppError } from '@/common/utils/handleServerAppError'
+import { domainTodoSchema } from '@/features/todolists/lib/schemas'
 
-export type DomainTodoLists = TodoListType & {
+export type TodoListType = DomainTodoLists & {
   headLineColor: string
   entityStatus: RequestStatus
   renameStatus: boolean
@@ -16,7 +17,7 @@ export type DomainTodoLists = TodoListType & {
 export const todoListsSlice = createAppSlice({
   name: 'todoLists',
   initialState: {
-    todoLists: [] as DomainTodoLists[],
+    todoLists: [] as TodoListType[],
     hasModeAddTodo: false,
   },
   reducers: (create) => ({
@@ -125,11 +126,10 @@ export const todoListsSlice = createAppSlice({
     ),
     fetchTodoListsTC: create.asyncThunk(
       async (_, { rejectWithValue, dispatch }) => {
-        //const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
         try {
           dispatch(loaderStatusAC({ status: 'loading' }))
-          //await delay(2000)
           const res = await todoListsApi.getTodoLists()
+          domainTodoSchema.array().parse(res.data) // 💎
           dispatch(loaderStatusAC({ status: 'idle' }))
           return { todoLists: res.data }
         } catch (error) {

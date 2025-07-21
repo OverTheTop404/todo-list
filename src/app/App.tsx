@@ -3,18 +3,36 @@ import domWrap from '../assets/images/domik-wrap.jpg'
 import { MainMenu } from '@/common/components/MainMenu/MainMenu'
 import { TopLine } from '@/common/components/TopLine/TopLine'
 import { Routing } from '@/common/routing/Routing'
+import { useEffect, useState } from 'react'
+import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+import { meTC } from '@/features/auth/model/auth-slice'
+import { loaderStatusAC } from '@/app/app-slice'
+import { AppLoader } from '@/common/components/AppLoader/AppLoader'
 import { AlertSnackbar } from '@/common/components/AlertSnackbar/AlertSnackbar'
-import { useAppSelector } from '@/common/hooks/useAppSelector'
-import { selectNotice } from '@/app/app-slice'
 
 export const App = () => {
+  const dispatch = useAppDispatch()
   // const themeMode = useAppSelector(selectThemeMode);
-  // const dispatch = useAppDispatch();
   // const changeTheme = () => {
   //   dispatch(changeThemeModeAC({ themeMode: themeMode === "light" ? "dark" : "light" }));
   // };
 
-  const noticeEntity = useAppSelector(selectNotice)
+  const [isInit, setIsInit] = useState(false)
+
+  useEffect(() => {
+    dispatch(meTC()).finally(() => {
+      setIsInit(true)
+    })
+  }, [])
+
+  if (!isInit) {
+    dispatch(loaderStatusAC({ status: 'loading' }))
+    return (
+      <Application>
+        <AppLoader />
+      </Application>
+    )
+  }
 
   return (
     <Application>
@@ -23,7 +41,7 @@ export const App = () => {
         <TopLine />
         <Routing />
       </WorkSpace>
-      {noticeEntity.noticeMessage && <AlertSnackbar noticeEntity={noticeEntity} />}
+      <AlertSnackbar />
     </Application>
   )
 }

@@ -1,11 +1,12 @@
 import { tasksApi } from '@/features/todolists/api/tasksApi'
-import type { TaskType, UpdateTaskModel } from '@/features/todolists/api/tasksApi.types'
+import type { DomainTask, UpdateTaskModel } from '@/features/todolists/api/tasksApi.types'
 import { createAppSlice } from '@/common/utils'
 import { changeEntityStatus, deleteTodoTC, modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
 import { type RequestStatus, setNoticeAC } from '@/app/app-slice'
 import { ResultCode } from '@/common/enums/enams'
 import { handleServerNetworkError } from '@/common/utils/handleServerNetworkError'
 import { handleServerAppError } from '@/common/utils/handleServerAppError'
+import { domainTaskSchema } from '@/features/todolists/lib/schemas'
 
 const modelCreator = (args: UpdateTaskModel) => {
   return {
@@ -18,14 +19,14 @@ const modelCreator = (args: UpdateTaskModel) => {
   }
 }
 
-export type DomainTask = TaskType & {
+export type TaskType = DomainTask & {
   renameStatus: boolean
   entityStatus: string // Временно string. Надо RequestStatus
 }
 
 export const tasksSlice = createAppSlice({
   name: 'tasks',
-  initialState: [] as DomainTask[],
+  initialState: [] as TaskType[],
   reducers: (create) => ({
     sortTasksAC: create.reducer<{ flag: boolean }>((state, action) => {
       state.sort((a, b) => {
@@ -96,6 +97,7 @@ export const tasksSlice = createAppSlice({
         try {
           dispatch(changeEntityStatus({ todolistId: args, status: 'loading' }))
           const res = await tasksApi.getTasks(args)
+          domainTaskSchema.array().parse(res.data.items) // 💎
           dispatch(changeEntityStatus({ todolistId: args, status: 'succeeded' }))
           return { tasksList: res.data.items }
         } catch (error) {

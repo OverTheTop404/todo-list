@@ -2,9 +2,19 @@ import styled from 'styled-components'
 import Andrey from '../../../assets/images/users/andrey3.jpg'
 import { Bell, Search, Settings } from 'lucide-react'
 import { useLocation } from 'react-router'
+import { Path } from '@/common/routing/Routing'
+import { logoutTC, selectIsLoggedIn } from '@/features/auth/model/auth-slice'
+import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+import { useAppSelector } from '@/common/hooks/useAppSelector'
 
 export const TopLine = () => {
+  const dispatch = useAppDispatch()
+  const isLoggedIn = useAppSelector(selectIsLoggedIn)
   const location = useLocation()
+
+  const logoutHandler = () => {
+    dispatch(logoutTC())
+  }
 
   return (
     <TopLineWrapper>
@@ -14,9 +24,12 @@ export const TopLine = () => {
           <Search size={18} />
           <SearchInput type="text" placeholder={'Search'} />
         </SearchWrap>
+        {isLoggedIn && <button onClick={logoutHandler}>logout</button>}
         <Bell size={20} />
         <Settings size={20} />
-        <AccountImage src={Andrey} alt="" />
+        <a href={Path.Login}>
+          <AccountImage src={Andrey} alt="user" />
+        </a>
       </RightSection>
     </TopLineWrapper>
   )
