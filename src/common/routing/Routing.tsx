@@ -4,8 +4,8 @@ import { TodoWorkSpace } from '@/features/todolists/ui/TodoWorkSpace/TodoWorkSpa
 import { PageNotFound } from '@/common/components/PageNotFound/PageNotFound'
 import { Login } from '@/features/auth/ui/Login/Login'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
-import { selectIsLoggedIn } from '@/features/auth/model/auth-slice'
 import { ProtectedRoute } from '@/common/components/ProtectedRoute/ProtectedRoute'
+import { selectIsLoggedIn } from '@/app/app-slice'
 
 const WithScroll = withDraggableScroll(TodoWorkSpace)
 

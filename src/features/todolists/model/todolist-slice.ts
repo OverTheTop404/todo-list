@@ -1,18 +1,11 @@
-import type { DomainTodoLists } from '@/features/todolists/api/todoListsApi.types'
-import { todoListsApi } from '@/features/todolists/api/todoListsApi'
+import { _todoListsApi } from '@/features/todolists/api/todoListsApi'
 import { createAppSlice } from '@/common/utils'
 import { loaderStatusAC, type RequestStatus, setNoticeAC } from '@/app/app-slice'
 import { ResultCode } from '@/common/enums/enams'
 import { handleServerNetworkError } from '@/common/utils/handleServerNetworkError'
 import { handleServerAppError } from '@/common/utils/handleServerAppError'
 import { domainTodoSchema } from '@/features/todolists/lib/schemas'
-
-export type TodoListType = DomainTodoLists & {
-  headLineColor: string
-  entityStatus: RequestStatus
-  renameStatus: boolean
-  addTaskStatus: boolean
-}
+import { TodoListType } from '../api/todoListsApi.types'
 
 export const todoListsSlice = createAppSlice({
   name: 'todoLists',
@@ -45,7 +38,7 @@ export const todoListsSlice = createAppSlice({
       async (args: { title: string; todolistId: string }, { rejectWithValue, dispatch }) => {
         try {
           dispatch(changeEntityStatus({ todolistId: args.todolistId, status: 'loading' }))
-          const res = await todoListsApi.renameTodoList({ ...args })
+          const res = await _todoListsApi.renameTodoList({ ...args })
           if (res.data.resultCode === ResultCode.Success) {
             dispatch(changeEntityStatus({ todolistId: args.todolistId, status: 'succeeded' }))
             dispatch(setNoticeAC({ noticeMessage: 'Success update todolist', noticeType: 'success' }))
@@ -74,7 +67,7 @@ export const todoListsSlice = createAppSlice({
       async (args: { id: string }, { rejectWithValue, dispatch }) => {
         try {
           dispatch(changeEntityStatus({ todolistId: args.id, status: 'loading' }))
-          await todoListsApi.deleteTodoList(args.id)
+          await _todoListsApi.deleteTodoList(args.id)
           dispatch(changeEntityStatus({ todolistId: args.id, status: 'succeeded' }))
           dispatch(setNoticeAC({ noticeMessage: 'Success delete todolist', noticeType: 'success' }))
           return args.id
@@ -94,7 +87,7 @@ export const todoListsSlice = createAppSlice({
     addTodoListsTC: create.asyncThunk(
       async (args: { letterTrim: string }, { rejectWithValue, dispatch }) => {
         try {
-          const res = await todoListsApi.addTodoList(args.letterTrim)
+          const res = await _todoListsApi.addTodoList(args.letterTrim)
           if (res.data.resultCode === ResultCode.Success) {
             dispatch(setNoticeAC({ noticeMessage: `Success create todolist «${res.data.data.item.title}»`, noticeType: 'success' }))
             return res.data
@@ -128,7 +121,7 @@ export const todoListsSlice = createAppSlice({
       async (_, { rejectWithValue, dispatch }) => {
         try {
           dispatch(loaderStatusAC({ status: 'loading' }))
-          const res = await todoListsApi.getTodoLists()
+          const res = await _todoListsApi.getTodoLists()
           domainTodoSchema.array().parse(res.data) // 💎
           dispatch(loaderStatusAC({ status: 'idle' }))
           return { todoLists: res.data }

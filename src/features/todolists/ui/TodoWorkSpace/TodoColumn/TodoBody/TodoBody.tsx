@@ -1,49 +1,51 @@
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { TaskRow } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TaskRow/TaskRow'
 import { BadgePlus } from 'lucide-react'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
 
 import styled from 'styled-components'
-import { useEffect } from 'react'
 import { FakeRow } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/FakeRow/FakeRow'
-import { fetchTaskTC, selectTasks } from '@/features/todolists/model/tasks-slice'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { selectViewTask } from '@/features/todolists/model/utility-slice'
 import { TaskStatus } from '@/common/enums/enams'
-import { type DomainTodoLists, modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
+import { modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
+import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
+import { useGetTasksQuery } from '@/features/todolists/api/tasksApi'
 
 type Props = {
-  todoInfo: DomainTodoLists
+  todoInfo: TodoListType
 }
 
 export const TodoBody = ({ todoInfo }: Props) => {
   const dispatch = useAppDispatch()
 
-  const tasks = useAppSelector(selectTasks)
+  //const tasks = useAppSelector(selectTasks)
   const viewTask = useAppSelector(selectViewTask)
 
-  // const isFetched = tasks.some((task) => task.todoListId === todoInfo.id)
+  const { data: tasks } = useGetTasksQuery(todoInfo.id)
 
-  useEffect(() => {
-    // @ts-ignore
-    !tasks.length && dispatch(fetchTaskTC(todoInfo.id))
-  }, [])
+  // useEffect(() => {
+  //   // @ts-ignore
+  //   !tasks.length && dispatch(fetchTaskTC(todoInfo.id))
+  // }, [])
 
-  let filteredTasksCopy = tasks
-  if (viewTask === 'active') filteredTasksCopy = tasks.filter((item) => item.status === TaskStatus.New)
-  if (viewTask === 'completed') filteredTasksCopy = tasks.filter((item) => item.status === TaskStatus.Completed)
+  let filteredTasksCopy = tasks?.items
+  if (viewTask === 'active') filteredTasksCopy = tasks?.items.filter((item) => item.status === TaskStatus.New)
+  if (viewTask === 'completed') filteredTasksCopy = tasks?.items.filter((item) => item.status === TaskStatus.Completed)
 
-  const taskForThisColumn = filteredTasksCopy.filter((task) => task.todoListId === todoInfo.id)
+  const taskForThisColumn = filteredTasksCopy?.filter((task) => task.todoListId === todoInfo.id)
   return (
     <>
       <StyledTodoBody>
-        {taskForThisColumn.length ? (
-          <SortableContext items={filteredTasksCopy} strategy={verticalListSortingStrategy}>
-            {taskForThisColumn.map((task) => {
-              return <TaskRow key={task.id} taskInfo={task} />
-            })}
-          </SortableContext>
+        {taskForThisColumn?.length ? (
+          taskForThisColumn?.map((task) => {
+            return <TaskRow key={task.id} taskInfo={task} />
+          })
         ) : (
+          // <SortableContext items={filteredTasksCopy} strategy={verticalListSortingStrategy}>
+          //   {taskForThisColumn?.map((task) => {
+          //     return <TaskRow key={task.id} taskInfo={task} />
+          //   })}
+          // </SortableContext>
           <p style={{ marginBottom: `${todoInfo.addTaskStatus ? '10px' : '0'}` }}>There are no tasks</p>
         )}
         {todoInfo.addTaskStatus && <FakeRow todoListId={todoInfo.id} />}

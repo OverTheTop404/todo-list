@@ -1,17 +1,9 @@
 import { SortPanel } from './SortPanel/SortPanel.tsx'
 import { TodoColumn } from './TodoColumn/TodoColumn.tsx'
-import { useEffect } from 'react'
-import { useAppSelector } from '@/common/hooks/useAppSelector.ts'
-import { fetchTodoListsTC, selectTodoLists } from '@/features/todolists/model/todolist-slice.ts'
-import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+import { useGetTodoListsQuery } from '@/features/todolists/api/todoListsApi'
 
 export const TodoWorkSpace = () => {
-  const dispatch = useAppDispatch()
-  const todoLists = useAppSelector(selectTodoLists)
-
-  useEffect(() => {
-    dispatch(fetchTodoListsTC())
-  }, [])
+  const { data: todoLists } = useGetTodoListsQuery()
 
   // BOF dnd-kit
   // const [activeColumn, setActiveColumn] = useState<DomainTodoLists | null>(null)
@@ -91,9 +83,7 @@ export const TodoWorkSpace = () => {
   return (
     <>
       <SortPanel />
-      {todoLists.map((column) => (
-        <TodoColumn key={column.id} todoInfo={column} />
-      ))}
+      {todoLists?.map((column) => <TodoColumn key={column.id} todoInfo={column} />)}
 
       {/*<DndContext*/}
       {/*  sensors={sensors}*/}

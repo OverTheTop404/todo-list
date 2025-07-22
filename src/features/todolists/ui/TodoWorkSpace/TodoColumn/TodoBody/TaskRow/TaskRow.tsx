@@ -5,17 +5,30 @@ import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
 import { useEffect, useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { deleteTaskTC, type DomainTask, renameTaskModeAC, updateTaskTC } from '@/features/todolists/model/tasks-slice.ts'
+import { renameTaskModeAC } from '@/features/todolists/model/tasks-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { TaskStatus } from '@/common/enums/enams'
 import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
+import { useDeleteTaskMutation, useUpdateTaskMutation } from '@/features/todolists/api/tasksApi'
+import type { TaskType, UpdateTaskModel } from '@/features/todolists/api/tasksApi.types'
 
 type StyledInputProps = {
-  taskInfo: DomainTask
+  taskInfo: TaskType
 }
 
 export const TaskRow = ({ taskInfo }: StyledInputProps) => {
   const dispatch = useAppDispatch()
+
+  const modelCreator = (args: UpdateTaskModel) => {
+    return {
+      description: args.description,
+      status: args.status,
+      priority: args.priority,
+      startDate: args.startDate,
+      deadline: args.deadline,
+      title: args.title,
+    }
+  }
 
   const [showPopup, setShowPopup] = useState(false)
 
@@ -34,13 +47,17 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
     }
   }, [])
 
+  const [updateTask] = useUpdateTaskMutation()
+
   const renameHandler = (title: string) => {
-    dispatch(updateTaskTC({ ...taskInfo, title: title }))
+    //dispatch(updateTaskTC({ ...taskInfo, title: title }))
+    updateTask({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model: { ...modelCreator(taskInfo), title } })
   }
 
   const changeTaskStatusHandler = () => {
     const newStatus = taskInfo.status === TaskStatus.New ? TaskStatus.Completed : TaskStatus.New
-    dispatch(updateTaskTC({ ...taskInfo, status: newStatus }))
+    updateTask({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model: { ...modelCreator(taskInfo), status: newStatus } })
+    //dispatch(updateTaskTC({ ...taskInfo, status: newStatus }))
   }
 
   const titlePencilHandler = () => {
@@ -48,9 +65,12 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
     dispatch(renameTaskModeAC({ taskId: taskInfo.id, mode: true }))
   }
 
+  const [deleteTaskMutation] = useDeleteTaskMutation()
+
   const deleteTaskHandler = () => {
     setShowPopup(false)
-    dispatch(deleteTaskTC({ todolistId: taskInfo.todoListId, taskId: taskInfo.id }))
+    deleteTaskMutation({ todolistId: taskInfo.todoListId, taskId: taskInfo.id })
+    //dispatch(deleteTaskTC({ todolistId: taskInfo.todoListId, taskId: taskInfo.id }))
   }
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({

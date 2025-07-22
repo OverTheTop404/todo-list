@@ -1,8 +1,9 @@
 import styled from 'styled-components'
-import { ChangeEvent, type Dispatch, KeyboardEvent, type SetStateAction, useRef, useState } from 'react'
+import { ChangeEvent, type Dispatch, KeyboardEvent, type SetStateAction, useEffect, useRef, useState } from 'react'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { addTodoListsTC } from '@/features/todolists/model/todolist-slice.ts'
-import { addTaskTC } from '@/features/todolists/model/tasks-slice.ts'
+import { useAddTodoListMutation } from '@/features/todolists/api/todoListsApi'
+import { modeAddTaskAC, modeAddTodoAC } from '@/features/todolists/model/todolist-slice'
+import { useCreateTaskMutation } from '@/features/todolists/api/tasksApi'
 
 type Props = {
   todoListId?: string
@@ -15,6 +16,21 @@ type Props = {
 
 export const Input = ({ todoListId, title, placeholder, inputHandler, renameHandler, switchLoader }: Props) => {
   const dispatch = useAppDispatch()
+
+  const [addTodoListMutation, { status: createTodoStatus }] = useAddTodoListMutation()
+  const [createTaskMutation, { status: createTaskStatus }] = useCreateTaskMutation()
+
+  useEffect(() => {
+    if (createTodoStatus === 'fulfilled') {
+      dispatch(modeAddTodoAC({ status: false }))
+    }
+    if (createTaskStatus === 'fulfilled') {
+      todoListId && dispatch(modeAddTaskAC({ status: false, todoListId }))
+    }
+  }, [createTodoStatus, createTaskStatus])
+
+  // dispatch(addTaskTC({ todoListId, title: letterTrim }))
+  // isSuccessCreateTodo && dispatch(modeAddTodoAC({ status: false }))
 
   const ref = useRef<HTMLInputElement | null>(null)
 
@@ -35,7 +51,7 @@ export const Input = ({ todoListId, title, placeholder, inputHandler, renameHand
     }
     if (letterTrim.length && title === '') {
       switchLoader && switchLoader(true)
-      todoListId ? dispatch(addTaskTC({ todoListId, title: letterTrim })) : dispatch(addTodoListsTC({ letterTrim }))
+      todoListId ? createTaskMutation({ todoListId, title: letterTrim }) : addTodoListMutation(letterTrim)
     }
     if (title?.length && letterTrim.length && title !== letterTrim) {
       renameHandler(letterTrim)

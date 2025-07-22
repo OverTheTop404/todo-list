@@ -1,12 +1,17 @@
-import { type SubmitHandler, useForm } from 'react-hook-form'
+import { type FieldErrors, type SubmitHandler, useForm } from 'react-hook-form'
 import s from './Login.module.css'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { type LoginInputs, loginSchema } from '@/features/auth/lib/schemas/loginSchema'
 import styled from 'styled-components'
 import { LockKeyhole, User } from 'lucide-react'
 import { ToastContainer } from 'react-toastify'
+import { useEffect } from 'react'
+import { toast } from 'react-toastify/unstyled'
+import { useLoginMutation } from '@/features/auth/api/authApi'
+import { ResultCode } from '@/common/enums/enams'
+import { setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
+import { AUTH_TOKEN } from '@/common/constants/constants'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { loginTC } from '@/features/auth/model/auth-slice'
 
 export const Login = () => {
   const dispatch = useAppDispatch()
@@ -14,29 +19,37 @@ export const Login = () => {
   const {
     register,
     handleSubmit,
-    //reset,
     formState: { errors },
   } = useForm<LoginInputs>({
     defaultValues: { email: '', password: '', rememberMe: false },
     resolver: zodResolver(loginSchema),
   })
 
+  const [mutation] = useLoginMutation()
+
   const onSubmit: SubmitHandler<LoginInputs> = (data) => {
-    dispatch(loginTC(data))
-    // toast.success('Form submitted successfully!')
-    //reset()
+    mutation(data).then((res) => {
+      if (res.data?.resultCode === ResultCode.Success) {
+        dispatch(setNoticeAC({ noticeMessage: 'Success Login', noticeType: 'info' }))
+        dispatch(setIsLoggedIn({ isLoggedIn: true }))
+        localStorage.setItem(AUTH_TOKEN, res.data.data.token)
+      }
+    })
   }
 
-  // useEffect(() => {
-  //   for (const key in errors) {
-  //     if (errors.hasOwnProperty(key)) {
-  //       const errorMessage = (errors as FieldErrors<LoginInputs>)[key as keyof LoginInputs]?.message
-  //       if (errorMessage) {
-  //         toast.error(errorMessage)
-  //       }
-  //     }
-  //   }
-  // }, [errors])
+  useEffect(() => {
+    for (const key in errors) {
+      if (errors.hasOwnProperty(key)) {
+        const errorMessage = (errors as FieldErrors<LoginInputs>)[key as keyof LoginInputs]?.message
+        if (errorMessage) {
+          toast.error(errorMessage, {
+            autoClose: 2000,
+            position: 'bottom-right',
+          })
+        }
+      }
+    }
+  }, [errors])
 
   return (
     <LoginForm>
@@ -82,9 +95,6 @@ export const Login = () => {
     </LoginForm>
   )
 }
-
-//error={!!errors.password}
-//error={!!errors.email}
 
 const FormGroup = styled.div`
   position: relative;

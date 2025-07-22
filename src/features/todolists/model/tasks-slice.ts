@@ -1,7 +1,7 @@
-import { tasksApi } from '@/features/todolists/api/tasksApi'
+import { _tasksApi } from '@/features/todolists/api/tasksApi'
 import type { DomainTask, UpdateTaskModel } from '@/features/todolists/api/tasksApi.types'
 import { createAppSlice } from '@/common/utils'
-import { changeEntityStatus, deleteTodoTC, modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
+import { changeEntityStatus, modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
 import { type RequestStatus, setNoticeAC } from '@/app/app-slice'
 import { ResultCode } from '@/common/enums/enams'
 import { handleServerNetworkError } from '@/common/utils/handleServerNetworkError'
@@ -19,7 +19,7 @@ const modelCreator = (args: UpdateTaskModel) => {
   }
 }
 
-export type TaskType = DomainTask & {
+type TaskType = DomainTask & {
   renameStatus: boolean
   entityStatus: string // Временно string. Надо RequestStatus
 }
@@ -45,7 +45,7 @@ export const tasksSlice = createAppSlice({
       async (args: DomainTask, { dispatch, rejectWithValue }) => {
         try {
           dispatch(changeEntityTaskStatusAC({ taskId: args.id, status: 'loading' }))
-          const res = await tasksApi.updateTask({ todolistId: args.todoListId, taskId: args.id, model: modelCreator(args) })
+          const res = await _tasksApi.updateTask({ todolistId: args.todoListId, taskId: args.id, model: modelCreator(args) })
           dispatch(renameTaskModeAC({ taskId: args.id, mode: false }))
           if (res.data.resultCode === ResultCode.Success) {
             dispatch(setNoticeAC({ noticeMessage: `Success update task «${res.data.data.item.title}»`, noticeType: 'success' }))
@@ -75,7 +75,7 @@ export const tasksSlice = createAppSlice({
       async (args: { todolistId: string; taskId: string }, { dispatch, rejectWithValue }) => {
         try {
           dispatch(changeEntityTaskStatusAC({ taskId: args.taskId, status: 'loading' }))
-          await tasksApi.deleteTask(args)
+          await _tasksApi.deleteTask(args)
           dispatch(setNoticeAC({ noticeMessage: 'Success delete task', noticeType: 'success' }))
           dispatch(changeEntityTaskStatusAC({ taskId: args.taskId, status: 'succeeded' }))
           return args.taskId
@@ -96,7 +96,7 @@ export const tasksSlice = createAppSlice({
       async (args: string, { rejectWithValue, dispatch }) => {
         try {
           dispatch(changeEntityStatus({ todolistId: args, status: 'loading' }))
-          const res = await tasksApi.getTasks(args)
+          const res = await _tasksApi.getTasks(args)
           domainTaskSchema.array().parse(res.data.items) // 💎
           dispatch(changeEntityStatus({ todolistId: args, status: 'succeeded' }))
           return { tasksList: res.data.items }
@@ -116,7 +116,7 @@ export const tasksSlice = createAppSlice({
     addTaskTC: create.asyncThunk(
       async (args: { todoListId: string; title: string }, { dispatch, rejectWithValue }) => {
         try {
-          const res = await tasksApi.createTask(args)
+          const res = await _tasksApi.createTask(args)
           dispatch(modeAddTaskAC({ status: false, todoListId: args.todoListId }))
           if (res.data.resultCode === ResultCode.Success) {
             dispatch(setNoticeAC({ noticeMessage: `Success create task «${res.data.data.item.title}»`, noticeType: 'success' }))
@@ -138,11 +138,11 @@ export const tasksSlice = createAppSlice({
       },
     ),
   }),
-  extraReducers: (builder) => {
-    builder.addCase(deleteTodoTC.fulfilled, (state, action: { payload: string }) => {
-      return state.filter((task) => task.todoListId !== action.payload)
-    })
-  },
+  // extraReducers: (builder) => {
+  //   builder.addCase(deleteTodoTC.fulfilled, (state, action: { payload: string }) => {
+  //     return state.filter((task) => task.todoListId !== action.payload)
+  //   })
+  // },
   selectors: {
     selectTasks: (state) => state,
   },

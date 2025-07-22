@@ -4,17 +4,13 @@ import { AlignRight, Palette, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
 import { HexColorPicker } from 'react-colorful'
-import {
-  changeHeadLineColorAC,
-  deleteTodoTC,
-  type DomainTodoLists,
-  renameTodoModeAC,
-  renameTodoTC,
-} from '@/features/todolists/model/todolist-slice.ts'
+import { changeHeadLineColorAC, renameTodoModeAC } from '@/features/todolists/model/todolist-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+import { useDeleteTodoListMutation, useRenameTodoListMutation } from '@/features/todolists/api/todoListsApi'
+import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 
 type TodoTitleProps = {
-  todoInfo: DomainTodoLists
+  todoInfo: TodoListType
 }
 
 export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
@@ -51,19 +47,23 @@ export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
     dispatch(renameTodoModeAC({ todoListId: todoInfo.id, mode: false }))
   }
 
-  const renameHandler = (title: string) => {
-    dispatch(renameTodoTC({ todolistId: id, title }))
-  }
-
   const titlePencilHandler = () => {
     setShowColorPicker(false)
     setShowPopup(false)
     dispatch(renameTodoModeAC({ todoListId: todoInfo.id, mode: true }))
   }
 
+  const [renameTodoListMutation] = useRenameTodoListMutation()
+
+  const renameHandler = (title: string) => {
+    renameTodoListMutation({ id, title })
+  }
+
+  const [deleteTodoListMutation] = useDeleteTodoListMutation()
+
   const deleteHandler = () => {
     setShowPopup(false)
-    dispatch(deleteTodoTC({ id }))
+    deleteTodoListMutation(id)
   }
 
   return (

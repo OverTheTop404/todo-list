@@ -3,43 +3,39 @@ import domWrap from '../assets/images/domik-wrap.jpg'
 import { MainMenu } from '@/common/components/MainMenu/MainMenu'
 import { TopLine } from '@/common/components/TopLine/TopLine'
 import { Routing } from '@/common/routing/Routing'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { meTC } from '@/features/auth/model/auth-slice'
-import { loaderStatusAC } from '@/app/app-slice'
+import { loaderStatusAC, setIsLoggedIn } from '@/app/app-slice'
 import { AppLoader } from '@/common/components/AppLoader/AppLoader'
 import { AlertSnackbar } from '@/common/components/AlertSnackbar/AlertSnackbar'
+import { useAuthMeQuery } from '@/features/auth/api/authApi'
+import { ResultCode } from '@/common/enums/enams'
 
 export const App = () => {
   const dispatch = useAppDispatch()
+
+  const { data, isLoading } = useAuthMeQuery()
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (data?.resultCode === ResultCode.Success) dispatch(setIsLoggedIn({ isLoggedIn: true }))
+      dispatch(loaderStatusAC({ status: 'idle' }))
+    } else {
+      dispatch(loaderStatusAC({ status: 'loading' }))
+    }
+  }, [isLoading])
+
   // const themeMode = useAppSelector(selectThemeMode);
   // const changeTheme = () => {
   //   dispatch(changeThemeModeAC({ themeMode: themeMode === "light" ? "dark" : "light" }));
   // };
-
-  const [isInit, setIsInit] = useState(false)
-
-  useEffect(() => {
-    dispatch(meTC()).finally(() => {
-      setIsInit(true)
-    })
-  }, [])
-
-  if (!isInit) {
-    dispatch(loaderStatusAC({ status: 'loading' }))
-    return (
-      <Application>
-        <AppLoader />
-      </Application>
-    )
-  }
 
   return (
     <Application>
       <MainMenu />
       <WorkSpace>
         <TopLine />
-        <Routing />
+        {isLoading ? <AppLoader /> : <Routing />}
       </WorkSpace>
       <AlertSnackbar />
     </Application>

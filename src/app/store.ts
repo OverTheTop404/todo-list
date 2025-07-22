@@ -3,7 +3,8 @@ import { tasksReducer, tasksSlice } from '@/features/todolists/model/tasks-slice
 import { todolistReducer, todoListsSlice } from '@/features/todolists/model/todolist-slice'
 import { appReducer, appSlice } from './app-slice.ts'
 import { utilityReducer, utilitySlice } from '@/features/todolists/model/utility-slice'
-import { authReducer, authSlice } from '@/features/auth/model/auth-slice'
+import { setupListeners } from '@reduxjs/toolkit/query'
+import { baseApi } from '@/app/baseApi'
 
 // создание store
 export const store = configureStore({
@@ -12,9 +13,12 @@ export const store = configureStore({
     [todoListsSlice.name]: todolistReducer,
     [appSlice.name]: appReducer,
     [utilitySlice.name]: utilityReducer,
-    [authSlice.name]: authReducer,
+    [baseApi.reducerPath]: baseApi.reducer,
   },
+  middleware: (gDM) => gDM().concat(baseApi.middleware),
 })
+
+setupListeners(store.dispatch)
 
 // автоматическое определение типа всего объекта состояния
 export type RootState = ReturnType<typeof store.getState>

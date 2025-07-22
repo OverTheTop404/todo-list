@@ -1,19 +1,29 @@
 import styled from 'styled-components'
 import Andrey from '../../../assets/images/users/andrey3.jpg'
-import { Bell, Search, Settings } from 'lucide-react'
+import { Bell, LogOut, Search, Settings } from 'lucide-react'
 import { useLocation } from 'react-router'
-import { Path } from '@/common/routing/Routing'
-import { logoutTC, selectIsLoggedIn } from '@/features/auth/model/auth-slice'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
+import { selectIsLoggedIn, setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
+import { useLogoutMutation } from '@/features/auth/api/authApi'
+import { ResultCode } from '@/common/enums/enams'
+import { AUTH_TOKEN } from '@/common/constants/constants'
 
 export const TopLine = () => {
+  const location = useLocation()
   const dispatch = useAppDispatch()
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
-  const location = useLocation()
+
+  const [logoutMutation] = useLogoutMutation()
 
   const logoutHandler = () => {
-    dispatch(logoutTC())
+    logoutMutation().then((res) => {
+      if (res.data?.resultCode === ResultCode.Success) {
+        dispatch(setNoticeAC({ noticeMessage: 'Success Logout', noticeType: 'info' }))
+        dispatch(setIsLoggedIn({ isLoggedIn: false }))
+        localStorage.removeItem(AUTH_TOKEN)
+      }
+    })
   }
 
   return (
@@ -24,12 +34,10 @@ export const TopLine = () => {
           <Search size={18} />
           <SearchInput type="text" placeholder={'Search'} />
         </SearchWrap>
-        {isLoggedIn && <button onClick={logoutHandler}>logout</button>}
         <Bell size={20} />
         <Settings size={20} />
-        <a href={Path.Login}>
-          <AccountImage src={Andrey} alt="user" />
-        </a>
+        {isLoggedIn && <LogOut size={20} onClick={logoutHandler} />}
+        <AccountImage src={Andrey} alt="user" />
       </RightSection>
     </TopLineWrapper>
   )
