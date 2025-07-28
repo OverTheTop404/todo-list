@@ -5,11 +5,11 @@ import React from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { TodoBody } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TodoBody'
-import type { DomainTodoLists } from '@/features/todolists/model/todolist-slice'
 import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
+import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 
 type TodoItemProps = {
-  todoInfo: DomainTodoLists
+  todoInfo: TodoListType
 }
 
 export const TodoColumn = ({ todoInfo }: TodoItemProps) => {
@@ -22,9 +22,9 @@ export const TodoColumn = ({ todoInfo }: TodoItemProps) => {
     disabled: todoInfo.renameStatus,
   })
   const style = {
-    transition,
     transform: CSS.Translate.toString(transform),
-    height: 'min-content',
+    transition,
+    // height: 'min-content',
     // height: isDragging ? "100%" : "min-content",
   }
   const subStyle = {
@@ -38,10 +38,10 @@ export const TodoColumn = ({ todoInfo }: TodoItemProps) => {
 
   if (isDragging) {
     return (
-      <ColumnWrapper ref={setNodeRef} style={{ ...style, ...dragStyle }}>
+      <ColumnWrapper style={{ ...style, ...dragStyle }}>
         <StyledTodoItem style={{ opacity: 0 }}>
-          <TodoTitle todoInfo={todoInfo} />
-          <TodoBody todoInfo={todoInfo} />
+          {/*<TodoTitle todoInfo={todoInfo} />*/}
+          {/*<TodoBody todoInfo={todoInfo} />*/}
         </StyledTodoItem>
       </ColumnWrapper>
     )

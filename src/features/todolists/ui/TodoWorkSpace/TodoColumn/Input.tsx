@@ -1,9 +1,10 @@
 import styled from 'styled-components'
-import { ChangeEvent, type Dispatch, KeyboardEvent, type SetStateAction, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, type Dispatch, KeyboardEvent, type SetStateAction, useRef, useState } from 'react'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { useAddTodoListMutation } from '@/features/todolists/api/todoListsApi'
-import { modeAddTaskAC, modeAddTodoAC } from '@/features/todolists/model/todolist-slice'
 import { useCreateTaskMutation } from '@/features/todolists/api/tasksApi'
+import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
+import { modeAddTodoAC } from '@/app/app-slice'
 
 type Props = {
   todoListId?: string
@@ -17,20 +18,32 @@ type Props = {
 export const Input = ({ todoListId, title, placeholder, inputHandler, renameHandler, switchLoader }: Props) => {
   const dispatch = useAppDispatch()
 
-  const [addTodoListMutation, { status: createTodoStatus }] = useAddTodoListMutation()
-  const [createTaskMutation, { status: createTaskStatus }] = useCreateTaskMutation()
+  const [addTodoListMutation] = useAddTodoListMutation()
+  const [createTaskMutation] = useCreateTaskMutation()
+  // console.log(isLoadingCreateTodo, isLoadingCreateTask)
+  // useEffect(() => {
+  //   // dispatch(modeAddTodoAC({ status: false }))
+  //   // todoListId && dispatch(changeModeAddTaskAC(todoListId, false))
+  //   if (createTodoStatus === 'fulfilled') {
+  //     dispatch(modeAddTodoAC({ status: false }))
+  //   }
+  //   if (createTaskStatus === 'fulfilled') {
+  //     todoListId && dispatch(changeModeAddTaskAC(todoListId, false))
+  //   }
+  // }, [isLoadingCreateTodo, isLoadingCreateTask])
 
-  useEffect(() => {
-    if (createTodoStatus === 'fulfilled') {
-      dispatch(modeAddTodoAC({ status: false }))
+  const createHandler = () => {
+    if (todoListId) {
+      createTaskMutation({ todoListId, title: letterTrim }).finally(() => {
+        dispatch(changeModeAddTaskAC(todoListId, false))
+      })
+    } else {
+      addTodoListMutation(letterTrim).finally(() => {
+        dispatch(modeAddTodoAC({ status: false }))
+      })
     }
-    if (createTaskStatus === 'fulfilled') {
-      todoListId && dispatch(modeAddTaskAC({ status: false, todoListId }))
-    }
-  }, [createTodoStatus, createTaskStatus])
-
-  // dispatch(addTaskTC({ todoListId, title: letterTrim }))
-  // isSuccessCreateTodo && dispatch(modeAddTodoAC({ status: false }))
+    //todoListId ? createTaskMutation({ todoListId, title: letterTrim }) : addTodoListMutation(letterTrim)
+  }
 
   const ref = useRef<HTMLInputElement | null>(null)
 
@@ -51,7 +64,7 @@ export const Input = ({ todoListId, title, placeholder, inputHandler, renameHand
     }
     if (letterTrim.length && title === '') {
       switchLoader && switchLoader(true)
-      todoListId ? createTaskMutation({ todoListId, title: letterTrim }) : addTodoListMutation(letterTrim)
+      createHandler()
     }
     if (title?.length && letterTrim.length && title !== letterTrim) {
       renameHandler(letterTrim)

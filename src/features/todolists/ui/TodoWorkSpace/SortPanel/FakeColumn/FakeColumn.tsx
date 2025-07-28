@@ -4,8 +4,8 @@ import React, { useState } from 'react'
 import { ColumnWrapper, StyledTodoItem } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoColumn'
 import styled from 'styled-components'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { modeAddTodoAC } from '@/features/todolists/model/todolist-slice'
 import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
+import { modeAddTodoAC } from '@/app/app-slice'
 
 export const FakeColumn = () => {
   const dispatch = useAppDispatch()

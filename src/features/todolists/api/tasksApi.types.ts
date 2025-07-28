@@ -30,3 +30,14 @@ export type UpdateTaskModel = {
   startDate: string | null
   deadline: string | null
 }
+
+export const modelCreator = (args: UpdateTaskModel) => {
+  return {
+    description: args.description,
+    status: args.status,
+    priority: args.priority,
+    startDate: args.startDate,
+    deadline: args.deadline,
+    title: args.title,
+  }
+}

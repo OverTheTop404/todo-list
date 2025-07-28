@@ -8,6 +8,7 @@ import { selectIsLoggedIn, setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
 import { useLogoutMutation } from '@/features/auth/api/authApi'
 import { ResultCode } from '@/common/enums/enams'
 import { AUTH_TOKEN } from '@/common/constants/constants'
+import { baseApi } from '@/app/baseApi'
 
 export const TopLine = () => {
   const location = useLocation()
@@ -17,13 +18,17 @@ export const TopLine = () => {
   const [logoutMutation] = useLogoutMutation()
 
   const logoutHandler = () => {
-    logoutMutation().then((res) => {
-      if (res.data?.resultCode === ResultCode.Success) {
-        dispatch(setNoticeAC({ noticeMessage: 'Success Logout', noticeType: 'info' }))
-        dispatch(setIsLoggedIn({ isLoggedIn: false }))
-        localStorage.removeItem(AUTH_TOKEN)
-      }
-    })
+    logoutMutation()
+      .then((res) => {
+        if (res.data?.resultCode === ResultCode.Success) {
+          dispatch(setNoticeAC({ noticeMessage: 'Success Logout', noticeType: 'info' }))
+          dispatch(setIsLoggedIn({ isLoggedIn: false }))
+          localStorage.removeItem(AUTH_TOKEN)
+        }
+      })
+      .then(() => {
+        dispatch(baseApi.util.invalidateTags(['Task', 'Auth', 'Todolist']))
+      })
   }
 
   return (

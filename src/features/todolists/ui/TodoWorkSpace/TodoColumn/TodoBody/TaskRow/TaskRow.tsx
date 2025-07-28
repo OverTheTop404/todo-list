@@ -2,15 +2,15 @@ import styled from 'styled-components'
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react'
 import { InputWrapper, TitleWrapper } from '../../TodoTitle/TodoTitle.tsx'
 import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
-import { useEffect, useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { renameTaskModeAC } from '@/features/todolists/model/tasks-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { TaskStatus } from '@/common/enums/enams'
 import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
 import { useDeleteTaskMutation, useUpdateTaskMutation } from '@/features/todolists/api/tasksApi'
-import type { TaskType, UpdateTaskModel } from '@/features/todolists/api/tasksApi.types'
+import { modelCreator, type TaskType } from '@/features/todolists/api/tasksApi.types'
+import { changeTaskEntityStatus, renameTaskMode } from '@/features/todolists/utils/taskUpdateQueryData'
+import { usePopup } from '@/common/hooks/usePopup'
 
 type StyledInputProps = {
   taskInfo: TaskType
@@ -18,59 +18,40 @@ type StyledInputProps = {
 
 export const TaskRow = ({ taskInfo }: StyledInputProps) => {
   const dispatch = useAppDispatch()
-
-  const modelCreator = (args: UpdateTaskModel) => {
-    return {
-      description: args.description,
-      status: args.status,
-      priority: args.priority,
-      startDate: args.startDate,
-      deadline: args.deadline,
-      title: args.title,
-    }
-  }
-
-  const [showPopup, setShowPopup] = useState(false)
-
-  const refPopup = useRef<HTMLUListElement | null>(null)
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (refPopup.current && !refPopup.current.contains(event.target as Node)) {
-      setShowPopup(false)
-    }
-  }
-
-  useEffect(() => {
-    document.addEventListener('mouseup', handleClickOutside)
-    return () => {
-      document.removeEventListener('mouseup', handleClickOutside)
-    }
-  }, [])
-
+  const { refPopup, showPopup, togglePopup } = usePopup()
   const [updateTask] = useUpdateTaskMutation()
+  const [deleteTaskMutation] = useDeleteTaskMutation()
+
+  const inputHandler = () => {
+    dispatch(renameTaskMode(taskInfo.id, taskInfo.todoListId, false))
+  }
 
   const renameHandler = (title: string) => {
-    //dispatch(updateTaskTC({ ...taskInfo, title: title }))
-    updateTask({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model: { ...modelCreator(taskInfo), title } })
+    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'loading'))
+    updateTask({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model: { ...modelCreator(taskInfo), title } }).then(() => {
+      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'idle'))
+    })
   }
 
   const changeTaskStatusHandler = () => {
     const newStatus = taskInfo.status === TaskStatus.New ? TaskStatus.Completed : TaskStatus.New
-    updateTask({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model: { ...modelCreator(taskInfo), status: newStatus } })
-    //dispatch(updateTaskTC({ ...taskInfo, status: newStatus }))
+    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'loading'))
+    updateTask({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model: { ...modelCreator(taskInfo), status: newStatus } }).then(() => {
+      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'idle'))
+    })
   }
 
   const titlePencilHandler = () => {
-    setShowPopup(false)
-    dispatch(renameTaskModeAC({ taskId: taskInfo.id, mode: true }))
+    togglePopup(false)
+    dispatch(renameTaskMode(taskInfo.id, taskInfo.todoListId, true))
   }
 
-  const [deleteTaskMutation] = useDeleteTaskMutation()
-
   const deleteTaskHandler = () => {
-    setShowPopup(false)
-    deleteTaskMutation({ todolistId: taskInfo.todoListId, taskId: taskInfo.id })
-    //dispatch(deleteTaskTC({ todolistId: taskInfo.todoListId, taskId: taskInfo.id }))
+    togglePopup(false)
+    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'loading'))
+    deleteTaskMutation({ todolistId: taskInfo.todoListId, taskId: taskInfo.id }).then(() => {
+      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'idle'))
+    })
   }
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -131,7 +112,7 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
           <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} />
           <InputLabel />
           <InputWrapper>
-            <Input title={taskInfo.title} inputHandler={() => {}} renameHandler={renameHandler} />
+            <Input title={taskInfo.title} inputHandler={inputHandler} renameHandler={renameHandler} />
           </InputWrapper>
         </TitleWrapper>
       ) : (
@@ -146,7 +127,7 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
       )}
       <PanelTitle>
         <SubMenuWrapper>
-          <EllipsisVertical size={20} className={showPopup ? 'active' : ''} onClick={() => setShowPopup(true)} />
+          <EllipsisVertical size={20} className={showPopup ? 'active' : ''} onClick={() => togglePopup(true)} />
           {showPopup && (
             <SubMenu ref={refPopup}>
               <li onClick={titlePencilHandler}>

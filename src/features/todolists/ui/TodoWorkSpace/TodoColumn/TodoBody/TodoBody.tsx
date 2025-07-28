@@ -7,9 +7,12 @@ import { FakeRow } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBo
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { selectViewTask } from '@/features/todolists/model/utility-slice'
 import { TaskStatus } from '@/common/enums/enams'
-import { modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
 import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 import { useGetTasksQuery } from '@/features/todolists/api/tasksApi'
+import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
+import { TaskSkeleton } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TaskSceleton/TaskSceleton'
+import { EmptyBtn, StyledEmptyBtn } from '@/features/todolists/ui/TodoWorkSpace/TodoSkeleton/TodoSkeleton'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 type Props = {
   todoInfo: TodoListType
@@ -17,40 +20,40 @@ type Props = {
 
 export const TodoBody = ({ todoInfo }: Props) => {
   const dispatch = useAppDispatch()
-
-  //const tasks = useAppSelector(selectTasks)
   const viewTask = useAppSelector(selectViewTask)
 
-  const { data: tasks } = useGetTasksQuery(todoInfo.id)
-
-  // useEffect(() => {
-  //   // @ts-ignore
-  //   !tasks.length && dispatch(fetchTaskTC(todoInfo.id))
-  // }, [])
+  const { data: tasks, isLoading } = useGetTasksQuery(todoInfo.id)
 
   let filteredTasksCopy = tasks?.items
   if (viewTask === 'active') filteredTasksCopy = tasks?.items.filter((item) => item.status === TaskStatus.New)
   if (viewTask === 'completed') filteredTasksCopy = tasks?.items.filter((item) => item.status === TaskStatus.Completed)
 
-  const taskForThisColumn = filteredTasksCopy?.filter((task) => task.todoListId === todoInfo.id)
+  if (isLoading) {
+    return (
+      <>
+        <TaskSkeleton taskRows={7} />
+        <StyledEmptyBtn>
+          <EmptyBtn />
+        </StyledEmptyBtn>
+      </>
+    )
+  }
+
   return (
     <>
       <StyledTodoBody>
-        {taskForThisColumn?.length ? (
-          taskForThisColumn?.map((task) => {
-            return <TaskRow key={task.id} taskInfo={task} />
-          })
+        {filteredTasksCopy?.length ? (
+          <SortableContext items={filteredTasksCopy} strategy={verticalListSortingStrategy}>
+            {filteredTasksCopy.map((task) => {
+              return <TaskRow key={task.id} taskInfo={task} />
+            })}
+          </SortableContext>
         ) : (
-          // <SortableContext items={filteredTasksCopy} strategy={verticalListSortingStrategy}>
-          //   {taskForThisColumn?.map((task) => {
-          //     return <TaskRow key={task.id} taskInfo={task} />
-          //   })}
-          // </SortableContext>
           <p style={{ marginBottom: `${todoInfo.addTaskStatus ? '10px' : '0'}` }}>There are no tasks</p>
         )}
         {todoInfo.addTaskStatus && <FakeRow todoListId={todoInfo.id} />}
       </StyledTodoBody>
-      <AddNewTaskBtn onClick={() => dispatch(modeAddTaskAC({ status: true, todoListId: todoInfo.id }))}>
+      <AddNewTaskBtn onClick={() => dispatch(changeModeAddTaskAC(todoInfo.id, true))}>
         <BadgePlus size={15} /> New task
       </AddNewTaskBtn>
     </>

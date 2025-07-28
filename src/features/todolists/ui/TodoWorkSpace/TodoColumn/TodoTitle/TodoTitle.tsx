@@ -1,13 +1,13 @@
 import styled from 'styled-components'
 
 import { AlignRight, Palette, Pencil, Trash2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
 import { HexColorPicker } from 'react-colorful'
-import { changeHeadLineColorAC, renameTodoModeAC } from '@/features/todolists/model/todolist-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { useDeleteTodoListMutation, useRenameTodoListMutation } from '@/features/todolists/api/todoListsApi'
 import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
+import { changeHeadLineColorAC, changeTodoEntityStatus, renameTodoModeAC } from '@/features/todolists/utils/todoUpdateQueryData'
+import { usePopup } from '@/common/hooks/usePopup'
 
 type TodoTitleProps = {
   todoInfo: TodoListType
@@ -15,60 +15,45 @@ type TodoTitleProps = {
 
 export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
   const dispatch = useAppDispatch()
-  const { id, title, headLineColor } = todoInfo
+  const { refPopup: refMenu, showPopup: showPopupMenu, togglePopup: togglePopupMenu } = usePopup()
+  const { refPopup: refColor, showPopup: showPopupColorPicker, togglePopup: togglePopupColorPicker } = usePopup()
+  const [renameTodoListMutation] = useRenameTodoListMutation()
+  const [deleteTodoListMutation] = useDeleteTodoListMutation()
 
-  const [showPopup, setShowPopup] = useState(false)
-  const [showColorPicker, setShowColorPicker] = useState(false)
+  const { id, title, headLineColor, renameStatus } = todoInfo
 
   const todoColorHandler = (color: string) => {
-    dispatch(changeHeadLineColorAC({ id, color }))
+    dispatch(changeHeadLineColorAC(id, color))
   }
-
-  const refPopup = useRef<HTMLUListElement | null>(null)
-  const refPopupColor = useRef<HTMLDivElement | null>(null)
-
-  const handlePopupClickOutside = (event: MouseEvent) => {
-    if (refPopup.current && !refPopup.current.contains(event.target as Node)) {
-      setShowPopup(false)
-    }
-    if (refPopupColor.current && !refPopupColor.current.contains(event.target as Node)) {
-      setShowColorPicker(false)
-    }
-  }
-
-  useEffect(() => {
-    document.addEventListener('mouseup', handlePopupClickOutside)
-    return () => {
-      document.removeEventListener('mouseup', handlePopupClickOutside)
-    }
-  }, [])
 
   const inputHandler = () => {
-    dispatch(renameTodoModeAC({ todoListId: todoInfo.id, mode: false }))
+    dispatch(renameTodoModeAC(id, false))
   }
 
   const titlePencilHandler = () => {
-    setShowColorPicker(false)
-    setShowPopup(false)
-    dispatch(renameTodoModeAC({ todoListId: todoInfo.id, mode: true }))
+    togglePopupColorPicker(false)
+    togglePopupMenu(false)
+    dispatch(renameTodoModeAC(id, true))
   }
-
-  const [renameTodoListMutation] = useRenameTodoListMutation()
 
   const renameHandler = (title: string) => {
-    renameTodoListMutation({ id, title })
+    dispatch(changeTodoEntityStatus(id, 'loading'))
+    renameTodoListMutation({ id, title }).then(() => {
+      dispatch(changeTodoEntityStatus(id, 'idle'))
+    })
   }
 
-  const [deleteTodoListMutation] = useDeleteTodoListMutation()
-
   const deleteHandler = () => {
-    setShowPopup(false)
-    deleteTodoListMutation(id)
+    togglePopupMenu(false)
+    dispatch(changeTodoEntityStatus(id, 'loading'))
+    deleteTodoListMutation(id).then(() => {
+      dispatch(changeTodoEntityStatus(id, 'idle'))
+    })
   }
 
   return (
     <StyledTitle style={{ borderTop: `5px solid ${headLineColor ? headLineColor : '#1ac517'}` }}>
-      {todoInfo.renameStatus || title === '' ? (
+      {renameStatus || title === '' ? (
         <InputWrapper>
           <Input title={title} inputHandler={inputHandler} renameHandler={renameHandler} />
         </InputWrapper>
@@ -80,17 +65,17 @@ export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
       )}
       <PanelTitle>
         <SubMenuWrapper>
-          <Palette size={20} className={showColorPicker ? 'active' : ''} onClick={() => setShowColorPicker(!showColorPicker)} />
-          {showColorPicker && (
-            <ColorMenu ref={refPopupColor}>
+          <Palette size={20} className={showPopupColorPicker ? 'active' : ''} onClick={() => togglePopupColorPicker(!showPopupColorPicker)} />
+          {showPopupColorPicker && (
+            <ColorMenu ref={refColor}>
               <HexColorPicker color={headLineColor} onChange={todoColorHandler} />
             </ColorMenu>
           )}
         </SubMenuWrapper>
         <SubMenuWrapper>
-          <AlignRight size={20} className={showPopup ? 'active' : ''} onClick={() => setShowPopup(!showPopup)} />
-          {showPopup && (
-            <SubMenu ref={refPopup}>
+          <AlignRight size={20} className={showPopupMenu ? 'active' : ''} onClick={() => togglePopupMenu(!showPopupMenu)} />
+          {showPopupMenu && (
+            <SubMenu ref={refMenu}>
               <li onClick={titlePencilHandler}>
                 <Pencil size={20} /> Rename
               </li>

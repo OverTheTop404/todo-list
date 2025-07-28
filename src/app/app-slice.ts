@@ -14,8 +14,12 @@ export const appSlice = createSlice({
       noticeMessage: null as null | string,
       noticeType: 'default' as TypeOptions,
     },
+    hasModeAddTodo: false,
   },
   reducers: (create) => ({
+    modeAddTodoAC: create.reducer<{ status: boolean }>((state, action) => {
+      state.hasModeAddTodo = action.payload.status
+    }),
     setIsLoggedIn: create.reducer<{ isLoggedIn: boolean }>((state, action) => {
       state.isLoggedIn = action.payload.isLoggedIn
     }),
@@ -34,9 +38,10 @@ export const appSlice = createSlice({
     selectLoaderStatus: (state) => state.loaderStatus,
     selectNotice: (state) => state.notice,
     selectIsLoggedIn: (state) => state.isLoggedIn,
+    selectHasModeAddTodo: (state) => state.hasModeAddTodo,
   },
 })
 
 export const appReducer = appSlice.reducer
-export const { changeThemeModeAC, loaderStatusAC, setNoticeAC, setIsLoggedIn } = appSlice.actions
-export const { selectThemeMode, selectLoaderStatus, selectNotice, selectIsLoggedIn } = appSlice.selectors
+export const { changeThemeModeAC, loaderStatusAC, setNoticeAC, setIsLoggedIn, modeAddTodoAC } = appSlice.actions
+export const { selectThemeMode, selectLoaderStatus, selectNotice, selectIsLoggedIn, selectHasModeAddTodo } = appSlice.selectors

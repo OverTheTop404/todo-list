@@ -1,47 +1,20 @@
 import { ArrowDown01, ArrowDown10, ArrowDownWideNarrow, CircleFadingPlus, Filter, SquareCheckBig, SquareDashed, SquareMenu } from 'lucide-react'
 import styled from 'styled-components'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { sortTasksAC } from '@/features/todolists/model/tasks-slice.ts'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { selectViewTask, viewTaskAC } from '@/features/todolists/model/utility-slice'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
 import { FakeColumn } from '@/features/todolists/ui/TodoWorkSpace/SortPanel/FakeColumn/FakeColumn'
-import { modeAddTodoAC, selectHasModeAddTodo } from '@/features/todolists/model/todolist-slice'
+import { modeAddTodoAC, selectHasModeAddTodo } from '@/app/app-slice'
+import { usePopup } from '@/common/hooks/usePopup'
 
 export const SortPanel = () => {
   const dispatch = useAppDispatch()
   const viewTask = useAppSelector(selectViewTask)
   const hasTodoMode = useAppSelector(selectHasModeAddTodo)
-
-  const [sortPopup, setSortPopup] = useState(false)
-  const [filterPopup, setFilterPopup] = useState(false)
-
-  const refSort = useRef<HTMLUListElement | null>(null)
-  const refFilter = useRef<HTMLUListElement | null>(null)
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (refSort.current && !refSort.current.contains(event.target as Node)) {
-      setSortPopup(false)
-    }
-    if (refFilter.current && !refFilter.current.contains(event.target as Node)) {
-      setFilterPopup(false)
-    }
-  }
-
-  const sortMenuClickHandler = () => {
-    setSortPopup(!sortPopup)
-  }
-
-  const filterMenuClickHandler = () => {
-    setFilterPopup(!sortPopup)
-  }
-
-  useEffect(() => {
-    document.addEventListener('mouseup', handleClickOutside)
-    return () => {
-      document.removeEventListener('mouseup', handleClickOutside)
-    }
-  }, [])
+  const { refPopup: refSort, showPopup: sortPopup, togglePopup: setSortPopup } = usePopup()
+  const { refPopup: refFilter, showPopup: filterPopup, togglePopup: setFilterPopup } = usePopup()
 
   const [activeSort, setActiveSort] = useState(true)
 
@@ -63,7 +36,7 @@ export const SortPanel = () => {
           </PanelBtn>
         </PanelBtnWrapper>
         <PanelBtnWrapper>
-          <PanelBtn title={'Sort task list'} className={sortPopup ? 'active' : ''} onClick={sortMenuClickHandler}>
+          <PanelBtn title={'Sort task list'} className={sortPopup ? 'active' : ''} onClick={() => setSortPopup(!sortPopup)}>
             <ArrowDownWideNarrow size={20} />
           </PanelBtn>
           {sortPopup && (
@@ -78,7 +51,7 @@ export const SortPanel = () => {
           )}
         </PanelBtnWrapper>
         <PanelBtnWrapper>
-          <PanelBtn title={'Filter task list'} className={filterPopup ? 'active' : ''} onClick={filterMenuClickHandler}>
+          <PanelBtn title={'Filter task list'} className={filterPopup ? 'active' : ''} onClick={() => setFilterPopup(!filterPopup)}>
             <Filter size={20} />
           </PanelBtn>
           {filterPopup && (

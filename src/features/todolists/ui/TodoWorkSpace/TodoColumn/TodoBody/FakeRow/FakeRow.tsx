@@ -9,9 +9,9 @@ import {
   SubMenuWrapper,
 } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TaskRow/TaskRow'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { modeAddTaskAC } from '@/features/todolists/model/todolist-slice'
 import { useState } from 'react'
 import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
+import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
 
 type FakeRowProps = {
   todoListId: string
@@ -21,7 +21,7 @@ export const FakeRow = ({ todoListId }: FakeRowProps) => {
   const dispatch = useAppDispatch()
   const [switchLoader, setSwitchLoader] = useState(false)
   const inputHandler = () => {
-    dispatch(modeAddTaskAC({ status: false, todoListId }))
+    dispatch(changeModeAddTaskAC(todoListId, false))
   }
 
   return (
