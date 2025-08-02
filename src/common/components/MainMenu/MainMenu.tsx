@@ -253,7 +253,7 @@ export const MainMenu = () => {
     <MenuWrapper>
       <TopPanel>
         <Logo href={'https://rocketweb.pro'} target={'_blank'}>
-          <IconSvgSprite iconId="rocketWebFull" width={'auto'} height={'45px'} viewBox={'0 0 1830 470'} />
+          <IconSvgSprite iconId="rocketWebFull" width={'100%'} height={'45px'} viewBox={'0 0 1830 470'} />
         </Logo>
         <ul>
           {menuItems.topMenu.map((item) => {

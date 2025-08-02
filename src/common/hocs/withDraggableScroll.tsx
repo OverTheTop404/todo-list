@@ -45,7 +45,7 @@ export const withDraggableScroll = <P extends object>(WrappedComponent: Componen
   }
 }
 
-const StyledSection = styled.div`
+export const StyledSection = styled.div`
   display: flex;
   flex: 1 1 0;
   gap: 30px;

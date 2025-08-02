@@ -2,8 +2,6 @@ import styled from 'styled-components'
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react'
 import { InputWrapper, TitleWrapper } from '../../TodoTitle/TodoTitle.tsx'
 import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
-import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { TaskStatus } from '@/common/enums/enams'
 import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
@@ -11,12 +9,14 @@ import { useDeleteTaskMutation, useUpdateTaskMutation } from '@/features/todolis
 import { modelCreator, type TaskType } from '@/features/todolists/api/tasksApi.types'
 import { changeTaskEntityStatus, renameTaskMode } from '@/features/todolists/utils/taskUpdateQueryData'
 import { usePopup } from '@/common/hooks/usePopup'
+import { Draggable } from '@hello-pangea/dnd'
 
 type StyledInputProps = {
   taskInfo: TaskType
+  index: number
 }
 
-export const TaskRow = ({ taskInfo }: StyledInputProps) => {
+export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
   const dispatch = useAppDispatch()
   const { refPopup, showPopup, togglePopup } = usePopup()
   const [updateTask] = useUpdateTaskMutation()
@@ -54,94 +54,52 @@ export const TaskRow = ({ taskInfo }: StyledInputProps) => {
     })
   }
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: taskInfo.id,
-    data: {
-      type: 'Task',
-      taskInfo,
-    },
-    disabled: taskInfo.renameStatus,
-    // animateLayoutChanges,
-  })
-  const style = {
-    transition,
-    transform: CSS.Translate.toString(transform),
-    borderRadius: '4px',
-    opacity: isDragging ? 0 : 1,
-    cursor: isDragging ? 'grab' : 'auto',
-    // color: isDragging ? "#ebecf0" : "#242424",
-    // background: isDragging ? "#ebecf0" : "#fff",
-    // border: "1px solid #ebecf0",
-  }
-  if (isDragging) {
-    return (
-      <StyledRow
-        className={taskInfo.status === TaskStatus.Completed ? 'checkedView' : ''}
-        ref={setNodeRef}
-        {...listeners}
-        {...attributes}
-        style={style}
-      >
-        <TitleWrapper id={taskInfo.id}>
-          <StyledInput type={'checkbox'} />
-          <InputLabel></InputLabel>
-          <div>
-            <LabelText>{taskInfo.title}</LabelText>
-            <Pencil size={20} />
-          </div>
-        </TitleWrapper>
-        <PanelTitle>
-          <SubMenuWrapper>
-            <EllipsisVertical size={20} className={showPopup ? 'active' : ''} />
-          </SubMenuWrapper>
-        </PanelTitle>
-      </StyledRow>
-    )
-  }
-
   return (
-    <StyledRow
-      className={taskInfo.status === TaskStatus.Completed ? 'checkedView' : ''}
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={style}
-    >
-      {taskInfo.renameStatus ? (
-        <TitleWrapper className={'edit'}>
-          <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} />
-          <InputLabel />
-          <InputWrapper>
-            <Input title={taskInfo.title} inputHandler={inputHandler} renameHandler={renameHandler} />
-          </InputWrapper>
-        </TitleWrapper>
-      ) : (
-        <TitleWrapper>
-          <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} />
-          <InputLabel onClick={() => changeTaskStatusHandler()}></InputLabel>
-          <div>
-            <LabelText onClick={() => changeTaskStatusHandler()}>{taskInfo.title}</LabelText>
-            <Pencil size={20} onClick={titlePencilHandler} />
-          </div>
-        </TitleWrapper>
-      )}
-      <PanelTitle>
-        <SubMenuWrapper>
-          <EllipsisVertical size={20} className={showPopup ? 'active' : ''} onClick={() => togglePopup(true)} />
-          {showPopup && (
-            <SubMenu ref={refPopup}>
-              <li onClick={titlePencilHandler}>
-                <Pencil size={20} /> Rename
-              </li>
-              <li onClick={() => deleteTaskHandler()}>
-                <Trash2 size={20} /> Delete
-              </li>
-            </SubMenu>
+    <Draggable draggableId={taskInfo.id} index={index}>
+      {(provided) => (
+        <StyledRow
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className={taskInfo.status === TaskStatus.Completed ? 'checkedView' : ''}
+        >
+          {taskInfo.renameStatus ? (
+            <TitleWrapper className={'edit'}>
+              <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} onChange={() => {}} />
+              <InputLabel />
+              <InputWrapper>
+                <Input title={taskInfo.title} inputHandler={inputHandler} renameHandler={renameHandler} />
+              </InputWrapper>
+            </TitleWrapper>
+          ) : (
+            <TitleWrapper>
+              <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} onChange={() => {}} />
+              <InputLabel onClick={() => changeTaskStatusHandler()}></InputLabel>
+              <div>
+                <LabelText onClick={() => changeTaskStatusHandler()}>{taskInfo.title}</LabelText>
+                <Pencil size={20} onClick={titlePencilHandler} />
+              </div>
+            </TitleWrapper>
           )}
-        </SubMenuWrapper>
-      </PanelTitle>
-      {taskInfo.entityStatus === 'loading' && <EntityStatus entity={'task'} />}
-    </StyledRow>
+          <PanelTitle>
+            <SubMenuWrapper>
+              <EllipsisVertical size={20} className={showPopup ? 'active' : ''} onClick={() => togglePopup(true)} />
+              {showPopup && (
+                <SubMenu ref={refPopup}>
+                  <li onClick={titlePencilHandler}>
+                    <Pencil size={20} /> Rename
+                  </li>
+                  <li onClick={() => deleteTaskHandler()}>
+                    <Trash2 size={20} /> Delete
+                  </li>
+                </SubMenu>
+              )}
+            </SubMenuWrapper>
+          </PanelTitle>
+          {taskInfo.entityStatus === 'loading' && <EntityStatus entity={'task'} />}
+        </StyledRow>
+      )}
+    </Draggable>
   )
 }
 

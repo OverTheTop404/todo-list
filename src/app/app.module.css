@@ -819,3 +819,8 @@
         transform: translate(32px,-10px)scale(0)
     }
 }
+
+[role="row"], [role="column"] {
+    transition: transform 0.25s ease;
+    will-change: transform;
+}

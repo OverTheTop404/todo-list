@@ -4,20 +4,21 @@ import { AlignRight, Palette, Pencil, Trash2 } from 'lucide-react'
 import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
 import { HexColorPicker } from 'react-colorful'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { useDeleteTodoListMutation, useRenameTodoListMutation } from '@/features/todolists/api/todoListsApi'
+import { useDeleteTodoListMutation, useUpdateTodoListMutation } from '@/features/todolists/api/todoListsApi'
 import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 import { changeHeadLineColorAC, changeTodoEntityStatus, renameTodoModeAC } from '@/features/todolists/utils/todoUpdateQueryData'
 import { usePopup } from '@/common/hooks/usePopup'
 
 type TodoTitleProps = {
   todoInfo: TodoListType
+  dragHandleProps?: any
 }
 
-export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
+export const TodoTitle = ({ todoInfo, dragHandleProps }: TodoTitleProps) => {
   const dispatch = useAppDispatch()
   const { refPopup: refMenu, showPopup: showPopupMenu, togglePopup: togglePopupMenu } = usePopup()
   const { refPopup: refColor, showPopup: showPopupColorPicker, togglePopup: togglePopupColorPicker } = usePopup()
-  const [renameTodoListMutation] = useRenameTodoListMutation()
+  const [updateTodoListMutation] = useUpdateTodoListMutation()
   const [deleteTodoListMutation] = useDeleteTodoListMutation()
 
   const { id, title, headLineColor, renameStatus } = todoInfo
@@ -38,7 +39,7 @@ export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
 
   const renameHandler = (title: string) => {
     dispatch(changeTodoEntityStatus(id, 'loading'))
-    renameTodoListMutation({ id, title }).then(() => {
+    updateTodoListMutation({ id, title }).then(() => {
       dispatch(changeTodoEntityStatus(id, 'idle'))
     })
   }
@@ -52,7 +53,7 @@ export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
   }
 
   return (
-    <StyledTitle style={{ borderTop: `5px solid ${headLineColor ? headLineColor : '#1ac517'}` }}>
+    <StyledTitle {...dragHandleProps} style={{ cursor: 'default', borderTop: `5px solid ${headLineColor ? headLineColor : '#1ac517'}` }}>
       {renameStatus || title === '' ? (
         <InputWrapper>
           <Input title={title} inputHandler={inputHandler} renameHandler={renameHandler} />
@@ -63,6 +64,7 @@ export const TodoTitle = ({ todoInfo }: TodoTitleProps) => {
           <Pencil size={15} onClick={titlePencilHandler} />
         </TitleWrapper>
       )}
+
       <PanelTitle>
         <SubMenuWrapper>
           <Palette size={20} className={showPopupColorPicker ? 'active' : ''} onClick={() => togglePopupColorPicker(!showPopupColorPicker)} />

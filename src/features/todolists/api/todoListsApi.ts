@@ -25,11 +25,24 @@ export const todoListsApi = baseApi.injectEndpoints({
       query: (todolistId) => ({ method: 'delete', url: `/todo-lists/${todolistId}` }),
       invalidatesTags: ['Todolist'],
     }),
-    renameTodoList: build.mutation<BaseResponse, { title: string; id: string }>({
-      query: ({ id, title }) => ({ method: 'put', url: `/todo-lists/${id}`, body: { title } }),
+    updateTodoList: build.mutation<BaseResponse, { title: string; id: string }>({
+      query: ({ id, title }) => ({
+        method: 'put',
+        url: `/todo-lists/${id}`,
+        body: { title },
+      }),
+      invalidatesTags: ['Todolist'],
+    }),
+    reorderTodoList: build.mutation<BaseResponse, { id: string; order: string | null }>({
+      query: ({ id, order }) => ({
+        method: 'put',
+        url: `/todo-lists/${id}/reorder`,
+        body: { putAfterItemId: order },
+      }),
       invalidatesTags: ['Todolist'],
     }),
   }),
 })
 
-export const { useGetTodoListsQuery, useDeleteTodoListMutation, useAddTodoListMutation, useRenameTodoListMutation } = todoListsApi
+export const { useGetTodoListsQuery, useDeleteTodoListMutation, useAddTodoListMutation, useUpdateTodoListMutation, useReorderTodoListMutation } =
+  todoListsApi

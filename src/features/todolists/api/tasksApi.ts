@@ -23,8 +23,29 @@ export const tasksApi = baseApi.injectEndpoints({
     updateTask: build.mutation<BaseResponse<{ item: DomainTask }>, { todolistId: string; taskId: string; model: UpdateTaskModel }>({
       query: (payload) => ({ method: 'put', url: `/todo-lists/${payload.todolistId}/tasks/${payload.taskId}`, body: payload.model }),
       invalidatesTags: (_res, _err, payload) => [{ type: 'Task', id: payload.todolistId }],
+      async onQueryStarted({ todolistId, taskId, model }, { queryFulfilled, dispatch }) {
+        const patchResult = dispatch(
+          tasksApi.util.updateQueryData('getTasks', todolistId, (state) => {
+            const task = state.items.find((task) => task.id === taskId)
+            if (task) task.status = model.status
+          }),
+        )
+        try {
+          await queryFulfilled
+        } catch {
+          patchResult.undo()
+        }
+      },
+    }),
+    reorderTask: build.mutation<BaseResponse, { todoId: string; taskId: string; order: string | null }>({
+      query: ({ todoId, taskId, order }) => ({
+        method: 'put',
+        url: `/todo-lists/${todoId}/tasks/${taskId}/reorder`,
+        body: { putAfterItemId: order },
+      }),
+      invalidatesTags: (_res, _err, payload) => [{ type: 'Task', id: payload.todoId }],
     }),
   }),
 })
 
-export const { useGetTasksQuery, useCreateTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } = tasksApi
+export const { useGetTasksQuery, useCreateTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation, useReorderTaskMutation } = tasksApi

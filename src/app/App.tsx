@@ -1,6 +1,5 @@
 import styled from 'styled-components'
 import domWrap from '../assets/images/domik-wrap.jpg'
-import { MainMenu } from '@/common/components/MainMenu/MainMenu'
 import { TopLine } from '@/common/components/TopLine/TopLine'
 import { Routing } from '@/common/routing/Routing'
 import { useEffect } from 'react'
@@ -10,6 +9,7 @@ import { AppLoader } from '@/common/components/AppLoader/AppLoader'
 import { AlertSnackbar } from '@/common/components/AlertSnackbar/AlertSnackbar'
 import { useAuthMeQuery } from '@/features/auth/api/authApi'
 import { ResultCode } from '@/common/enums/enams'
+import { MainMenuNew } from '@/common/components/MainMenu/MainMenuNew'
 
 export const App = () => {
   const dispatch = useAppDispatch()
@@ -32,7 +32,7 @@ export const App = () => {
 
   return (
     <Application>
-      <MainMenu />
+      <MainMenuNew />
       <WorkSpace>
         <TopLine />
         {isLoading ? <AppLoader /> : <Routing />}

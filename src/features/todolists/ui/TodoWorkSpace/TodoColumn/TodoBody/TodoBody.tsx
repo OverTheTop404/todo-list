@@ -12,7 +12,7 @@ import { useGetTasksQuery } from '@/features/todolists/api/tasksApi'
 import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
 import { TaskSkeleton } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TaskSceleton/TaskSceleton'
 import { EmptyBtn, StyledEmptyBtn } from '@/features/todolists/ui/TodoWorkSpace/TodoSkeleton/TodoSkeleton'
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { Droppable } from '@hello-pangea/dnd'
 
 type Props = {
   todoInfo: TodoListType
@@ -42,16 +42,19 @@ export const TodoBody = ({ todoInfo }: Props) => {
   return (
     <>
       <StyledTodoBody>
-        {filteredTasksCopy?.length ? (
-          <SortableContext items={filteredTasksCopy} strategy={verticalListSortingStrategy}>
-            {filteredTasksCopy.map((task) => {
-              return <TaskRow key={task.id} taskInfo={task} />
-            })}
-          </SortableContext>
-        ) : (
-          <p style={{ marginBottom: `${todoInfo.addTaskStatus ? '10px' : '0'}` }}>There are no tasks</p>
-        )}
-        {todoInfo.addTaskStatus && <FakeRow todoListId={todoInfo.id} />}
+        <Droppable droppableId={todoInfo.id} type="TASK">
+          {(provided) => (
+            <ul ref={provided.innerRef} {...provided.droppableProps}>
+              {filteredTasksCopy?.length ? (
+                filteredTasksCopy.map((task, index) => <TaskRow key={task.id} taskInfo={task} index={index} />)
+              ) : (
+                <p style={{ marginBottom: `${todoInfo.addTaskStatus ? '10px' : '0'}` }}>There are no tasks</p>
+              )}
+              {provided.placeholder}
+              {todoInfo.addTaskStatus && <FakeRow todoListId={todoInfo.id} />}
+            </ul>
+          )}
+        </Droppable>
       </StyledTodoBody>
       <AddNewTaskBtn onClick={() => dispatch(changeModeAddTaskAC(todoInfo.id, true))}>
         <BadgePlus size={15} /> New task

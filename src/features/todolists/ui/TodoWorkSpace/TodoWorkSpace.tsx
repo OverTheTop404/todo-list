@@ -1,106 +1,100 @@
-import {
-  closestCorners,
-  DndContext,
-  type DragEndEvent,
-  type DragOverEvent,
-  DragOverlay,
-  type DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
 import { SortPanel } from './SortPanel/SortPanel.tsx'
 import { TodoColumn } from './TodoColumn/TodoColumn.tsx'
-import { useGetTodoListsQuery } from '@/features/todolists/api/todoListsApi'
+import { todoListsApi, useGetTodoListsQuery, useReorderTodoListMutation } from '@/features/todolists/api/todoListsApi'
 import { TodoSkeleton } from '@/features/todolists/ui/TodoWorkSpace/TodoSkeleton/TodoSkeleton'
-import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable'
-import { useState } from 'react'
-import { createPortal } from 'react-dom'
-import { TaskRow } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TaskRow/TaskRow'
-import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
-import type { TaskType } from '@/features/todolists/api/tasksApi.types'
+
+import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
+import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+import { tasksApi, useReorderTaskMutation } from '@/features/todolists/api/tasksApi'
 
 export const TodoWorkSpace = () => {
   const { data: todoLists, isLoading } = useGetTodoListsQuery()
 
-  // BOF dnd-kit
-  const [activeColumn, setActiveColumn] = useState<TodoListType | null>(null)
-  const [activeTask, setActiveTask] = useState<TaskType | null>(null)
+  const dispatch = useAppDispatch()
+  const [reorderTodoList] = useReorderTodoListMutation()
+  const [reorderTask] = useReorderTaskMutation()
 
-  const handleDragStart = (event: DragStartEvent) => {
-    switch (event.active.data.current?.type) {
-      case 'Column':
-        setActiveColumn(event.active.data.current.todoInfo)
-        return
-      case 'Task':
-        setActiveTask(event.active.data.current.taskInfo)
-        return
-    }
-  }
+  const handleDragEnd = async (result: DropResult) => {
+    const { destination, source, type, draggableId } = result
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event
+    if (!destination) return
 
-    if (!over) return
-
-    const activeId = active.id
-    const overId = over ? over.id : null
-
-    if (activeId === overId) return
-
-    const isActiveTask = active.data.current?.type === 'Task'
-    const isOverTask = over.data.current?.type === 'Task'
-
-    if (!isActiveTask) return
-
-    if (isActiveTask && isOverTask) {
-      //   setTasks((tasksCopy) => {
-      //     const activeIndex = tasksCopy.findIndex((t) => t.id === activeId);
-      //     const overIndex = tasksCopy.findIndex((t) => t.id === overId);
-      //     tasksCopy[activeIndex].todoListId = tasksCopy[overIndex].todoListId;
-      //     return arrayMove(tasksCopy, activeIndex, overIndex);
-      //   });
+    if (destination.droppableId === source.droppableId && destination.index === source.index) {
+      return
     }
 
-    const isOverAColumn = over.data.current?.type === 'Column'
+    // Перемещение колонок
+    if (type === 'COLUMN' && todoLists) {
+      const newColumns = [...todoLists]
+      const [movedColumn] = newColumns.splice(source.index, 1)
+      newColumns.splice(destination.index, 0, movedColumn)
 
-    if (isActiveTask && isOverAColumn) {
-      //   setTasks((tasksCopy) => {
-      //     const activeIndex = tasksCopy.findIndex((t) => t.id === activeId);
-      //     tasksCopy[activeIndex].todoListId = overId;
-      //     return arrayMove(tasksCopy, activeIndex, activeIndex);
-      //   });
+      const patchResult = dispatch(
+        todoListsApi.util.updateQueryData('getTodoLists', undefined, (_state) => {
+          return newColumns
+        }),
+      )
+
+      const newOrder =
+        destination.index === 0 ? null : destination.index < source.index ? todoLists[destination.index - 1].id : todoLists[destination.index].id
+
+      try {
+        await reorderTodoList({
+          id: movedColumn.id,
+          order: newOrder,
+        }).unwrap()
+      } catch (error) {
+        patchResult.undo()
+        console.error('Failed to update todo list order:', error)
+      }
+      return
+    }
+
+    // Перемещение задач
+    if (type === 'TASK') {
+      const sourceTodoId = source.droppableId // ID колонки, откуда переместили
+      const destinationTodoId = destination.droppableId // ID колонки, куда переместили
+      const taskId = draggableId // ID перемещаемой задачи
+
+      dispatch(
+        tasksApi.util.updateQueryData('getTasks', destinationTodoId, (state) => {
+          const newOrder =
+            destination.index === 0
+              ? null
+              : destination.index < source.index
+                ? state.items[destination.index - 1].id
+                : state.items[destination.index].id
+
+          if (sourceTodoId === destinationTodoId) {
+            const taskIndex = state.items.findIndex((t) => t.id === taskId)
+            if (taskIndex === -1) return
+            const [task] = state.items.splice(taskIndex, 1)
+            state.items.splice(destination.index, 0, task) // Если задача остается в той же колонке
+          } else {
+            // Иначе обновляем целевую колонку
+            // dispatch(
+            //   tasksApi.util.updateQueryData('getTasks', destinationTodoId, (targetDraft) => {
+            //     targetDraft.items.splice(destination.index, 0, {
+            //       ...task,
+            //       todoListId: destinationTodoId, // Обновляем ID колонки если нужно
+            //     })
+            //   }),
+            // )
+          }
+
+          try {
+            reorderTask({
+              todoId: destinationTodoId, // или sourceTodoId, если порядок в той же колонке
+              taskId,
+              order: newOrder,
+            }).unwrap()
+          } catch (error) {
+            console.error('Failed to update task order:', error)
+          }
+        }),
+      )
     }
   }
-
-  const handleColumnDragEnd = (event: DragEndEvent) => {
-    setActiveColumn(null)
-    setActiveTask(null)
-
-    const { active, over } = event
-
-    if (!over) return
-
-    const activeId = active.id
-    const overId = over ? over.id : null
-
-    if (activeId === overId) return
-
-    // setTodoLists((todoList) => {
-    //   const activeColumnIndex = todoLists.findIndex((list) => list.id === activeId);
-    //   const overColumnIndex = todoLists.findIndex((list) => list.id === overId);
-    //   return arrayMove(todoList, activeColumnIndex, overColumnIndex);
-    // });
-  }
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 3,
-      },
-    }),
-  )
-  // const columnsId = useMemo(() => todoLists.map((column) => column.id), [todoLists]);
-  // EOF dnd-kit
 
   if (isLoading) {
     return (
@@ -117,31 +111,16 @@ export const TodoWorkSpace = () => {
   return (
     <>
       <SortPanel />
-      {/*{todoLists?.map((column) => <TodoColumn key={column.id} todoInfo={column} />)}*/}
-
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners} //closestCorners
-        onDragStart={handleDragStart}
-        onDragEnd={handleColumnDragEnd}
-        onDragOver={handleDragOver}
-      >
-        {todoLists && (
-          <SortableContext items={todoLists} strategy={horizontalListSortingStrategy}>
-            {todoLists.map((column) => (
-              <TodoColumn key={column.id} todoInfo={column} />
-            ))}
-          </SortableContext>
-        )}
-
-        {createPortal(
-          <DragOverlay>
-            {activeColumn && <TodoColumn todoInfo={activeColumn} />}
-            {activeTask && <TaskRow taskInfo={activeTask} />}
-          </DragOverlay>,
-          document.body,
-        )}
-      </DndContext>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: 'flex', minHeight: '300px' }}>
+              {todoLists?.map((column, index) => <TodoColumn key={column.id} todoInfo={column} index={index} />)}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </>
   )
 }

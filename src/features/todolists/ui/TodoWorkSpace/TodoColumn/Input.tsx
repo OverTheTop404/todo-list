@@ -20,17 +20,6 @@ export const Input = ({ todoListId, title, placeholder, inputHandler, renameHand
 
   const [addTodoListMutation] = useAddTodoListMutation()
   const [createTaskMutation] = useCreateTaskMutation()
-  // console.log(isLoadingCreateTodo, isLoadingCreateTask)
-  // useEffect(() => {
-  //   // dispatch(modeAddTodoAC({ status: false }))
-  //   // todoListId && dispatch(changeModeAddTaskAC(todoListId, false))
-  //   if (createTodoStatus === 'fulfilled') {
-  //     dispatch(modeAddTodoAC({ status: false }))
-  //   }
-  //   if (createTaskStatus === 'fulfilled') {
-  //     todoListId && dispatch(changeModeAddTaskAC(todoListId, false))
-  //   }
-  // }, [isLoadingCreateTodo, isLoadingCreateTask])
 
   const createHandler = () => {
     if (todoListId) {
@@ -42,7 +31,6 @@ export const Input = ({ todoListId, title, placeholder, inputHandler, renameHand
         dispatch(modeAddTodoAC({ status: false }))
       })
     }
-    //todoListId ? createTaskMutation({ todoListId, title: letterTrim }) : addTodoListMutation(letterTrim)
   }
 
   const ref = useRef<HTMLInputElement | null>(null)
