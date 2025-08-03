@@ -15,7 +15,7 @@ export const FakeColumn = () => {
     dispatch(modeAddTodoAC({ status: false }))
   }
   return (
-    <ColumnWrapper onMouseDown={stopHorizontalScrollOnClickColumn}>
+    <ColumnWrapper onMouseDown={stopHorizontalScrollOnClickColumn} style={{ marginRight: '0' }}>
       <StyledTodoItem>
         <StyledTitle style={{ borderTop: '5px solid #1ac517' }}>
           <InputWrapper>

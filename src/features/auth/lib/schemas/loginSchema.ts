@@ -2,7 +2,7 @@ import { z } from 'zod/v4'
 
 export const loginSchema = z.object({
   email: z.email(),
-  password: z.string().nonempty({ error: 'Password is required' }).min(5, { error: 'Password must be at least 5 characters long' }),
+  password: z.string().nonempty({ error: 'Password is required' }).min(4, { error: 'Password must be at least 4 characters long' }),
   rememberMe: z.boolean(),
   captcha: z.string().optional(),
 })

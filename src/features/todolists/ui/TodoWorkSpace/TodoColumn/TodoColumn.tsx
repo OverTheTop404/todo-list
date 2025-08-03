@@ -42,7 +42,7 @@ export const StyledTodoItem = styled.div`
 export const ColumnWrapper = styled.div`
   border-radius: 4px;
   position: relative;
-  width: 375px;
+  min-width: 375px;
   display: inline-flex;
   margin-right: 30px;
   height: min-content;

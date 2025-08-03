@@ -7,7 +7,7 @@ export const baseApi = createApi({
   tagTypes: ['Todolist', 'Task', 'Auth'],
   refetchOnReconnect: true,
   baseQuery: async (args, api, extraOptions) => {
-    // await new Promise((resolve) => setTimeout(resolve, 2000))
+    //await new Promise((resolve) => setTimeout(resolve, 2000))
 
     const fetchResult = await fetchBaseQuery({
       baseUrl: import.meta.env.VITE_BASE_URL,

@@ -100,10 +100,12 @@ export const TodoWorkSpace = () => {
     return (
       <>
         <SortPanel />
-        <TodoSkeleton />
-        <TodoSkeleton />
-        <TodoSkeleton />
-        <TodoSkeleton />
+        <div style={{ display: 'flex', minHeight: '300px' }}>
+          <TodoSkeleton />
+          <TodoSkeleton />
+          <TodoSkeleton />
+          <TodoSkeleton />
+        </div>
       </>
     )
   }
