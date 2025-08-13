@@ -132,6 +132,8 @@ const FormWrapper = styled.div`
 const FormLabel = styled.div`
   width: 100%;
   margin-bottom: 20px;
+  user-select: text;
+  cursor: text;
   h2 {
     margin-bottom: 10px;
   }
