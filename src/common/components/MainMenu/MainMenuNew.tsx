@@ -1,5 +1,18 @@
 import styles from './MainMenu.module.css'
-import { BriefcaseBusiness, Building2, ChevronDown, FileInput, FileText, Headset, LayoutList, MessagesSquare, Plus, User, Users } from 'lucide-react'
+import {
+  BriefcaseBusiness,
+  Building2,
+  ChevronDown,
+  FileInput,
+  FileText,
+  Headset,
+  LayoutDashboard,
+  LayoutList,
+  MessagesSquare,
+  Plus,
+  User,
+  Users,
+} from 'lucide-react'
 import Andrey from '../../../assets/images/users/andrey3.jpg'
 import React, { useState } from 'react'
 import { NavLink } from 'react-router'
@@ -18,6 +31,11 @@ type MenuItem = {
 
 const menuConfig = {
   topMenu: [
+    {
+      title: 'Dashboard',
+      link: 'dashboard',
+      icon: <LayoutDashboard size={20} />,
+    },
     {
       title: 'My tasks',
       link: 'my-tasks',
@@ -41,7 +59,7 @@ const menuConfig = {
       ],
     },
     {
-      title: 'Team chats',
+      title: 'Team chats (in dev)',
       icon: <MessagesSquare size={20} />,
       rightInfo: <ChevronDown size={20} />,
       subItems: [
@@ -80,7 +98,7 @@ export const MainMenuNew = () => {
     return (
       <div key={`${item.title}-${index}`}>
         {item.link ? (
-          <NavLink to={item.link} state={{ pageName: item.title }}>
+          <NavLink className={styles.navLink} to={item.link} state={{ pageName: item.title }}>
             <li className={listItemClass}>
               <ListItemContent item={item} index={index} />
             </li>

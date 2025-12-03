@@ -53,5 +53,6 @@ export const StyledSection = styled.div`
   padding: 30px;
   height: 100%;
   z-index: 1;
+
   overflow-x: auto;
 `

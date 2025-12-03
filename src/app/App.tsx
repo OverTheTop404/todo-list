@@ -1,15 +1,13 @@
-import styled from 'styled-components'
-import domWrap from '../assets/images/domik-wrap.jpg'
-import { TopLine } from '@/common/components/TopLine/TopLine'
 import { Routing } from '@/common/routing/Routing'
-import { useEffect } from 'react'
-import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { loaderStatusAC, setIsLoggedIn } from '@/app/app-slice'
 import { AppLoader } from '@/common/components/AppLoader/AppLoader'
-import { AlertSnackbar } from '@/common/components/AlertSnackbar/AlertSnackbar'
-import { useAuthMeQuery } from '@/features/auth/api/authApi'
-import { ResultCode } from '@/common/enums/enams'
-import { MainMenuNew } from '@/common/components/MainMenu/MainMenuNew'
+import styled from 'styled-components'
+import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+
+import { useEffect } from 'react'
+import { loaderStatusAC, setIsLoggedIn } from '@/app/app-slice'
+// import domWrap from '../../../assets/images/domik-wrap.jpg'
+import loginBg from '../assets/images/DeeDoesAI.webp'
+import { useAuthMeQuery } from '@/features/auth/api/sbAuthApi'
 
 export const App = () => {
   const dispatch = useAppDispatch()
@@ -17,42 +15,26 @@ export const App = () => {
   const { data, isLoading } = useAuthMeQuery()
 
   useEffect(() => {
-    if (!isLoading) {
-      if (data?.resultCode === ResultCode.Success) dispatch(setIsLoggedIn({ isLoggedIn: true }))
-      dispatch(loaderStatusAC({ status: 'idle' }))
-    } else {
+    if (isLoading) {
       dispatch(loaderStatusAC({ status: 'loading' }))
+    } else {
+      if (data?.user.aud === 'authenticated') {
+        dispatch(setIsLoggedIn({ isLoggedIn: true }))
+      }
+      dispatch(loaderStatusAC({ status: 'idle' }))
     }
   }, [isLoading])
 
-  // const themeMode = useAppSelector(selectThemeMode);
-  // const changeTheme = () => {
-  //   dispatch(changeThemeModeAC({ themeMode: themeMode === "light" ? "dark" : "light" }));
-  // };
-
   return (
     <Application>
-      <MainMenuNew />
-      <WorkSpace>
-        <TopLine />
-        {isLoading ? <AppLoader /> : <Routing />}
-      </WorkSpace>
-      <AlertSnackbar />
+      {!isLoading && <Routing />}
+      <AppLoader />
     </Application>
   )
 }
 
-const WorkSpace = styled.div`
-  display: flex;
-  flex: 1 1 0;
-  flex-wrap: nowrap;
-  flex-direction: column;
-  user-select: none;
-  cursor: default;
-  overflow: hidden;
-`
-const Application = styled.div`
-  background: url(${domWrap}) 50% 50% no-repeat;
+export const Application = styled.div`
+  background: url(${loginBg}) 50% 50% no-repeat;
   background-size: cover;
   display: flex;
   flex-direction: row;
@@ -69,7 +51,7 @@ const Application = styled.div`
     content: '';
     position: absolute;
     background-color: #000;
-    opacity: 0.7;
+    opacity: 0.8;
     z-index: 0;
     top: 0;
     left: 0;

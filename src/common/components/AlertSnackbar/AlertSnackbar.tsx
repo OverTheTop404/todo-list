@@ -5,7 +5,6 @@ import { selectNotice } from '@/app/app-slice'
 
 export const AlertSnackbar = () => {
   const noticeEntity = useAppSelector(selectNotice)
-
   toast(noticeEntity.noticeMessage, {
     type: noticeEntity.noticeType,
     autoClose: 2000,

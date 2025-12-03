@@ -4,6 +4,9 @@ import { appReducer, appSlice } from './app-slice.ts'
 import { utilityReducer, utilitySlice } from '@/features/todolists/model/utility-slice'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { baseApi } from '@/app/baseApi'
+import { supabaseApi } from '@/app/supabaseApi'
+
+const apiMiddlewares = [supabaseApi.middleware, baseApi.middleware]
 
 // создание store
 export const store = configureStore({
@@ -12,8 +15,9 @@ export const store = configureStore({
     [appSlice.name]: appReducer,
     [utilitySlice.name]: utilityReducer,
     [baseApi.reducerPath]: baseApi.reducer,
+    [supabaseApi.reducerPath]: supabaseApi.reducer,
   },
-  middleware: (gDM) => gDM().concat(baseApi.middleware),
+  middleware: (gDM) => gDM().concat(apiMiddlewares),
 })
 
 setupListeners(store.dispatch)

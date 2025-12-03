@@ -39,7 +39,7 @@ const StyledAppLoader = styled.div`
   -ms-transition: all 300ms linear 0ms;
   -o-transition: all 300ms linear 0ms;
   transition: all 300ms linear 0ms;
-  background-color: rgba(0, 0, 0, 0.85);
+  background-color: rgba(0, 0, 0, 0.8);
   -webkit-transform: scale(1);
   -khtml-transform: scale(1);
   -moz-transform: scale(1);

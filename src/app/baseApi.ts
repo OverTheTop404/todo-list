@@ -17,7 +17,7 @@ export const baseApi = createApi({
       },
     })(args, api, extraOptions)
 
-    handleError(api, fetchResult)
+    await handleError(api, fetchResult)
 
     return fetchResult
   },

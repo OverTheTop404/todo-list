@@ -4,36 +4,50 @@ import { Bell, LogOut, Search, Settings } from 'lucide-react'
 import { useLocation } from 'react-router'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
-import { selectIsLoggedIn, setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
-import { useLogoutMutation } from '@/features/auth/api/authApi'
-import { ResultCode } from '@/common/enums/enams'
-import { AUTH_TOKEN } from '@/common/constants/constants'
+import { loaderStatusAC, selectIsLoggedIn, setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
 import { baseApi } from '@/app/baseApi'
+import { useLogoutMutation } from '@/features/auth/api/sbAuthApi'
 
 export const TopLine = () => {
   const location = useLocation()
   const dispatch = useAppDispatch()
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
 
-  const [logoutMutation] = useLogoutMutation()
+  //const [logoutMutation] = useLogoutMutation()
+  const [logoutUser] = useLogoutMutation()
 
-  const logoutHandler = () => {
-    logoutMutation()
-      .then((res) => {
-        if (res.data?.resultCode === ResultCode.Success) {
-          dispatch(setNoticeAC({ noticeMessage: 'Success Logout', noticeType: 'info' }))
-          dispatch(setIsLoggedIn({ isLoggedIn: false }))
-          localStorage.removeItem(AUTH_TOKEN)
-        }
-      })
-      .then(() => {
-        dispatch(baseApi.util.invalidateTags(['Task', 'Auth', 'Todolist']))
-      })
+  //const logoutHandler = () => {
+  // logoutMutation()
+  //   .then((res) => {
+  //     if (res.data?.resultCode === ResultCode.Success) {
+  //       dispatch(setNoticeAC({ noticeMessage: 'Success Logout', noticeType: 'info' }))
+  //       dispatch(setIsLoggedIn({ isLoggedIn: false }))
+  //       localStorage.removeItem(AUTH_TOKEN)
+  //     }
+  //   })
+  //   .then(() => {
+  //     dispatch(baseApi.util.invalidateTags(['Task', 'Auth', 'Todolist']))
+  //   })
+  //}
+  const logoutHandler = async () => {
+    try {
+      dispatch(loaderStatusAC({ status: 'loading' }))
+      const { error } = await logoutUser()
+      if (error) {
+        throw error
+      }
+      dispatch(loaderStatusAC({ status: 'idle' }))
+      dispatch(setIsLoggedIn({ isLoggedIn: false }))
+      dispatch(setNoticeAC({ noticeMessage: 'Success Logout', noticeType: 'info' }))
+      dispatch(baseApi.util.invalidateTags(['Task', 'Auth', 'Todolist']))
+    } catch (error: any) {
+      console.error('Ошибка при выходе:', error.message)
+    }
   }
 
   return (
     <TopLineWrapper>
-      <LeftSection>{location.state ? location.state.pageName : 'Home'}</LeftSection>
+      <LeftSection>{location.state ? location.state.pageName : 'Dashboard'}</LeftSection>
       <RightSection>
         <SearchWrap>
           <Search size={18} />
@@ -41,6 +55,7 @@ export const TopLine = () => {
         </SearchWrap>
         <Bell size={20} />
         <Settings size={20} />
+        {/*{isLoggedIn && <LogOut size={20} onClick={logoutHandler} />}*/}
         {isLoggedIn && <LogOut size={20} onClick={logoutHandler} />}
         <AccountImage src={Andrey} alt="user" />
       </RightSection>
@@ -54,7 +69,7 @@ const TopLineWrapper = styled.div`
   align-items: center;
   padding: 18px 30px;
   color: #fff;
-  background-color: rgba(31, 31, 31, 0.8);
+  background-color: rgba(10, 15, 23, 1);
 `
 const LeftSection = styled.div``
 const RightSection = styled.div`
