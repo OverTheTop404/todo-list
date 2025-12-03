@@ -129,7 +129,9 @@ export const SignIn = () => {
       </LoginForm>
       <LoginInfo>
         <FormLabel>
-          <p style={{ marginBottom: '15px', fontSize: '17px', fontWeight: '600' }}>Guest access if you just want to watch:</p>
+          <p style={{ marginBottom: '15px', fontSize: '17px', fontWeight: '600' }}>
+            Guest access if you just want to watch: ////////////////////////////////////////////////////
+          </p>
           <p>
             <b>Email:</b> free@samuraijs.com
           </p>
