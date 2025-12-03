@@ -1,4 +1,5 @@
 {
+  "alias": ["board.overthetop404.ru"],
   "rewrites": [
     {
       "source": "/(.*)",
