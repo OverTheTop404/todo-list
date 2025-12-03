@@ -12,6 +12,7 @@ import { IconSvgSprite } from '@/common/components/IconSvgSprite/IconSvgSprite'
 import { Path } from '@/common/routing/Routing'
 import { useLoginMutation } from '../../api/sbAuthApi'
 import { loaderStatusAC, setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
+import { Link } from 'react-router'
 
 export const SignIn = () => {
   const dispatch = useAppDispatch()
@@ -115,10 +116,10 @@ export const SignIn = () => {
             <FormButton type="submit">Continue</FormButton>
             <HelpersLink>
               <ForgotPass>
-                <a href="#">Forgot Password?</a>
+                <Link to="#">Forgot Password?</Link>
               </ForgotPass>
               <NoAccount>
-                No account? <a href={Path.SignUp}>Sign up</a>
+                No account? <Link to={Path.SignUp}>Sign up</Link>
               </NoAccount>
             </HelpersLink>
           </FormFieldWrapper>

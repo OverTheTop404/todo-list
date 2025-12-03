@@ -12,6 +12,7 @@ import { Path } from '@/common/routing/Routing'
 import { useSignUpMutation } from '@/features/auth/api/sbAuthApi'
 import { loaderStatusAC, setIsLoggedIn } from '@/app/app-slice'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+import { Link } from 'react-router'
 
 export const SignUp = () => {
   const dispatch = useAppDispatch()
@@ -126,7 +127,7 @@ export const SignUp = () => {
             <FormButton type="submit">Continue</FormButton>
             <HelpersLink>
               <NoAccount>
-                Already have an account? <a href={Path.SignIn}>Sign In</a>
+                Already have an account? <Link to={Path.SignIn}>Sign In</Link>
               </NoAccount>
             </HelpersLink>
           </FormFieldWrapper>
@@ -137,9 +138,9 @@ export const SignUp = () => {
         <FormLabel>
           <p style={{ marginBottom: '15px', fontSize: '17px', fontWeight: '600' }}>If you just want to watch:</p>
           Go back to{' '}
-          <a href={Path.SignIn} style={{ color: '#fff' }}>
+          <Link to={Path.SignIn} style={{ color: '#fff' }}>
             Sign in
-          </a>
+          </Link>
         </FormLabel>
       </LoginInfo>
     </LoginWrapper>
