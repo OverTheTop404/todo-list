@@ -1,6 +1,6 @@
 {
   "alias": ["board.overthetop404.ru", "kanban.overthetop404.ru"],
-  "regions": ["arn1"],
+  "regions": ["dub1"],
   "rewrites": [
     {
       "source": "/(.*)",
