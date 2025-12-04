@@ -11,6 +11,10 @@
       "source": "/(.*)",
       "headers": [
         {
+          "key": "X-Forwarded-Host",
+          "value": "kanban.overthetop404.ru"
+        },
+        {
           "key": "X-Frame-Options",
           "value": "DENY"
         },
