@@ -151,11 +151,11 @@ export const InputWrapper = styled.div`
     padding: 0;
   }
 `
-const PanelTitle = styled.div`
+export const PanelTitle = styled.div`
   display: flex;
   flex-direction: row;
 `
-const SubMenuWrapper = styled.div`
+export const SubMenuWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -176,7 +176,7 @@ const SubMenuWrapper = styled.div`
     color: #0052cc;
   }
 `
-const SubMenu = styled.ul`
+export const SubMenu = styled.ul`
   position: absolute;
   top: 100%;
   left: 0;

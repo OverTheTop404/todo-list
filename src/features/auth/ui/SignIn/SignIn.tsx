@@ -246,10 +246,10 @@ const Logo = styled.div`
   }
 `
 
-const FormGroup = styled.div`
+export const FormGroup = styled.div`
   position: relative;
   margin-bottom: 15px;
-  & svg {
+  & > svg {
     color: rgb(71 72 72);
     position: absolute;
     left: 5px;
@@ -261,7 +261,7 @@ const FormGroup = styled.div`
   }
 `
 
-const FormLabel = styled.div`
+export const FormLabel = styled.div`
   color: #fff;
   width: 100%;
   margin-bottom: 20px;
@@ -272,7 +272,7 @@ const FormLabel = styled.div`
   }
 `
 
-const FormFieldWrapper = styled.div`
+export const FormFieldWrapper = styled.div`
   position: relative;
   color: #fff;
   span {
@@ -281,7 +281,7 @@ const FormFieldWrapper = styled.div`
   }
 `
 
-const TextField = styled.input`
+export const TextField = styled.input`
   padding: 10px 10px 10px 30px;
   border: 1px solid #282c42;
   color: #fff;
@@ -295,7 +295,7 @@ const TextField = styled.input`
     color: #ccc;
   }
 `
-const FormButton = styled.button`
+export const FormButton = styled.button`
   display: block;
   background: linear-gradient(122deg, #fa5560 0.01%, #b14bf4 49.9%, #4d91ff 100%);
 

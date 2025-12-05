@@ -17,6 +17,7 @@ import Andrey from '../../../assets/images/users/andrey3.jpg'
 import React, { useState } from 'react'
 import { NavLink } from 'react-router'
 import { IconSvgSprite } from '@/common/components/IconSvgSprite/IconSvgSprite'
+import { useGetBoardsQuery } from '@/features/boards/api/boardsApi'
 
 const colors = ['#f5ae10', '#1363da', '#ff3737', '#1ac517', '#b210f5']
 
@@ -29,58 +30,9 @@ type MenuItem = {
   subItems?: MenuItem[]
 }
 
-const menuConfig = {
-  topMenu: [
-    {
-      title: 'Dashboard',
-      link: 'dashboard',
-      icon: <LayoutDashboard size={20} />,
-    },
-    {
-      title: 'My tasks',
-      link: 'my-tasks',
-      icon: <User size={20} />,
-      rightInfo: 5,
-    },
-    {
-      title: 'Other tasks',
-      link: 'other-tasks',
-      icon: <Users size={20} />,
-    },
-    {
-      title: 'Boards',
-      icon: <BriefcaseBusiness size={20} />,
-      rightInfo: <ChevronDown size={20} />,
-      subItems: [
-        { title: 'Create new board', icon: <Plus size={20} /> },
-        { title: 'Daily tasks', link: 'daily-tasks' },
-        { title: 'Armoglaze', link: 'armoglaze' },
-        { title: 'Rocketweb', link: 'rocketweb' },
-      ],
-    },
-    {
-      title: 'Team chats (in dev)',
-      icon: <MessagesSquare size={20} />,
-      rightInfo: <ChevronDown size={20} />,
-      subItems: [
-        { title: 'Create group chat', icon: <Plus size={20} /> },
-        { title: 'Mike', rightInfo: 5 },
-        { title: 'Andrey', image: Andrey, rightInfo: 10 },
-        { title: 'Marta', rightInfo: 7 },
-        { title: 'Diana', rightInfo: 3 },
-      ],
-    },
-  ],
-  bottomMenu: [
-    { title: 'My company', link: 'my-company', icon: <Building2 size={20} /> },
-    { title: 'News', link: 'news', icon: <LayoutList size={20} />, rightInfo: '+5' },
-    { title: 'Reports', link: 'reports', icon: <FileInput size={20} /> },
-    { title: 'License', link: 'license', icon: <FileText size={20} /> },
-    { title: 'Support', link: 'support', icon: <Headset size={20} /> },
-  ],
-}
-
 export const MainMenuNew = () => {
+  const { data: dataBoard } = useGetBoardsQuery()
+
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({
     Boards: true,
     'Team chats': true,
@@ -88,6 +40,59 @@ export const MainMenuNew = () => {
 
   const toggleExpand = (title: string) => {
     setExpandedItems((prev) => ({ ...prev, [title]: !prev[title] }))
+  }
+
+  const menuConfig = {
+    topMenu: [
+      {
+        title: 'Dashboard',
+        link: 'dashboard',
+        icon: <LayoutDashboard size={20} />,
+      },
+      {
+        title: 'My tasks',
+        link: 'my-tasks',
+        icon: <User size={20} />,
+        rightInfo: 5,
+      },
+      {
+        title: 'Other tasks',
+        link: 'other-tasks',
+        icon: <Users size={20} />,
+      },
+      {
+        title: 'Boards',
+        icon: <BriefcaseBusiness size={20} />,
+        rightInfo: <ChevronDown size={20} />,
+        subItems: [
+          { title: 'Create new board', icon: <Plus size={20} /> },
+          ...(dataBoard ?? []).map((board) => ({
+            title: board.title,
+            link: `board/${board.id}`,
+            image: board.image_url,
+          })),
+        ],
+      },
+      {
+        title: 'Team chats (in dev)',
+        icon: <MessagesSquare size={20} />,
+        rightInfo: <ChevronDown size={20} />,
+        subItems: [
+          { title: 'Create group chat', icon: <Plus size={20} /> },
+          { title: 'Mike', rightInfo: 5 },
+          { title: 'Andrey', image: Andrey, rightInfo: 10 },
+          { title: 'Marta', rightInfo: 7 },
+          { title: 'Diana', rightInfo: 3 },
+        ],
+      },
+    ],
+    bottomMenu: [
+      { title: 'My company', link: 'my-company', icon: <Building2 size={20} /> },
+      { title: 'News', link: 'news', icon: <LayoutList size={20} />, rightInfo: '+5' },
+      { title: 'Reports', link: 'reports', icon: <FileInput size={20} /> },
+      { title: 'License', link: 'license', icon: <FileText size={20} /> },
+      { title: 'Support', link: 'support', icon: <Headset size={20} /> },
+    ],
   }
 
   const renderMenuItem = (item: MenuItem, index: number, isSubItem = false) => {

@@ -1,6 +1,6 @@
 import { supabaseApi } from '@/app/supabaseApi'
 import { supabase } from '@/app/supaBaseClient'
-import type { Board } from '@/features/boards/api/boardsApi.types'
+import type { Board, CreateBoard } from '@/features/boards/api/boardsApi.types'
 
 export const boardsApi = supabaseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -31,7 +31,7 @@ export const boardsApi = supabaseApi.injectEndpoints({
     }),
 
     // Создание новой доски
-    createBoard: builder.mutation<Board, Partial<Board>>({
+    createBoard: builder.mutation<Board, CreateBoard>({
       queryFn: async (boardData) => {
         const { data, error } = await supabase.from('boards').insert([boardData]).select().single()
 
@@ -57,8 +57,8 @@ export const boardsApi = supabaseApi.injectEndpoints({
     }),
 
     // Удаление доски
-    deleteBoard: builder.mutation<void, string>({
-      queryFn: async (id) => {
+    deleteBoard: builder.mutation<void, { id: string }>({
+      queryFn: async ({ id }) => {
         const { error } = await supabase.from('boards').delete().eq('id', id)
 
         if (error) {

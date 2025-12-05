@@ -33,7 +33,7 @@ export const GlobalStyled = createGlobalStyle`
     }
     h1{
         color: #fff;
-        font-family: "Glober Bold", sans-serif;
+        font-family: globerbold, sans-serif;
     }
     h2,h3{
         color: #fff;
@@ -71,10 +71,8 @@ export const GlobalStyled = createGlobalStyle`
         background: white;
         border-radius: 8px;
         padding: 20px;
-        max-width: 500px;
+        max-width: 700px;
         width: 90%;
-        max-height: 80vh;
-        //overflow-y: auto;
         transform: translateY(-50px);
         transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -96,12 +94,17 @@ export const GlobalStyled = createGlobalStyle`
     }
     /* Кастомные классы */
     .modal-content {
-        background: white;
-        border-radius: 12px;
+        position: relative;
+        background: #0a0f17;
+        border-radius: 8px;
         padding: 0;
         border: none;
-        max-width: 600px;
+        max-width: 700px;
         width: 90%;
+        
+    }
+    .modal-content h2{
+        color: white;
     }
 
     .modal-overlay {

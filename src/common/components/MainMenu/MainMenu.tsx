@@ -1,5 +1,18 @@
 import styled from 'styled-components'
-import { BriefcaseBusiness, Building2, ChevronDown, FileInput, FileText, Headset, LayoutList, MessagesSquare, Plus, User, Users } from 'lucide-react'
+import {
+  BriefcaseBusiness,
+  Building2,
+  ChevronDown,
+  FileInput,
+  FileText,
+  Headset,
+  LayoutDashboard,
+  LayoutList,
+  MessagesSquare,
+  Plus,
+  User,
+  Users,
+} from 'lucide-react'
 import Andrey from '../../../assets/images/users/andrey3.jpg'
 import { ReactNode, useState } from 'react'
 import { nanoid } from '@reduxjs/toolkit'
@@ -256,6 +269,43 @@ export const MainMenu = () => {
           <IconSvgSprite iconId="rocketWebFull" width={'100%'} height={'45px'} viewBox={'0 0 1830 470'} />
         </Logo>
         <ul>
+          <Li>
+            <NavLink to={'/dashboard'} state={{ pageName: 'Dashboard' }}>
+              <LayoutDashboard size={20} /> Dashboard
+            </NavLink>
+          </Li>
+          <Li>
+            <NavLink to={'/my-tasks'} state={{ pageName: 'My tasks' }}>
+              <User size={20} /> My tasks
+            </NavLink>
+            <RightInfo>5</RightInfo>
+          </Li>
+          <Li>
+            <NavLink to={'/other-tasks'} state={{ pageName: 'Other tasks' }}>
+              <Users size={20} /> Other tasks
+            </NavLink>
+            <RightInfo>5</RightInfo>
+          </Li>
+          <Li>
+            <ToggleBtn>
+              <Title>
+                <BriefcaseBusiness size={20} /> Boards
+              </Title>
+              <RightInfo>
+                <ChevronDown size={20} />
+              </RightInfo>
+            </ToggleBtn>
+            {/*{ title: 'Create new board', icon: <Plus size={20} /> },*/}
+            <ul>
+              <Li>
+                <NavLink to={'/'} state={{ pageName: 'Name' }}>
+                  <img src={'/'} alt={''} /> Name
+                </NavLink>
+              </Li>
+            </ul>
+          </Li>
+        </ul>
+        <ul>
           {menuItems.topMenu.map((item) => {
             return (
               <>
@@ -375,6 +425,57 @@ const Logo = styled.a`
     cursor: pointer;
   }
 `
+const ToggleBtn = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`
+const Li = styled.li`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  position: relative;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 2px;
+  border-radius: 4px;
+  ul {
+    width: 100%;
+  }
+  a {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 5px 10px;
+    svg {
+      margin-right: 5px;
+      width: 24px;
+    }
+  }
+  &.active {
+    background: #868885;
+  }
+  &:hover {
+    cursor: pointer;
+    background: #616462;
+  }
+`
+
+const Title = styled.span`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: #fff;
+  text-decoration: none;
+  padding: 5px 10px;
+  svg {
+    margin-right: 5px;
+    width: 24px;
+  }
+`
+
 const ListItemRow = styled.div`
   display: flex;
   justify-content: space-between;
@@ -426,13 +527,7 @@ const Icon = styled.span`
     border-radius: 50%;
   }
 `
-const Title = styled.span`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  color: #fff;
-  text-decoration: none;
-`
+
 const RightInfo = styled.span`
   display: flex;
   justify-content: center;

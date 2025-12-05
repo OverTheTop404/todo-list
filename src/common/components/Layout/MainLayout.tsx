@@ -14,12 +14,15 @@ export const MainLayout = ({ children }: Props) => {
       <MainMenuNew />
       <WorkSpace>
         <TopLine />
-        {children ? children : <Outlet />}
+        <MainLayoutContent>{children ? children : <Outlet />}</MainLayoutContent>
       </WorkSpace>
     </>
   )
 }
 
+const MainLayoutContent = styled.div`
+  position: relative;
+`
 const WorkSpace = styled.div`
   display: flex;
   flex: 1 1 0;

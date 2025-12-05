@@ -2,27 +2,28 @@ import styled from 'styled-components'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
 import { selectLoaderStatus } from '@/app/app-slice'
 
-export const AppLoader = () => {
-  const loaderStatus = useAppSelector(selectLoaderStatus)
+type Props = {
+  forceMode?: boolean
+  bg?: string | 'unset'
+}
 
+export const AppLoader = ({ forceMode = false, bg = '' }: Props) => {
+  const loaderStatus = useAppSelector(selectLoaderStatus)
+  if (loaderStatus !== 'loading' && !forceMode) return null
   return (
-    <>
-      {loaderStatus === 'loading' && (
-        <StyledAppLoader id="ct-loadding">
-          <div className="loading-infinity">
-            <div>
-              <span></span>
-            </div>
-            <div>
-              <span></span>
-            </div>
-            <div>
-              <span></span>
-            </div>
-          </div>
-        </StyledAppLoader>
-      )}
-    </>
+    <StyledAppLoader id="ct-loadding" style={{ backgroundColor: bg, zIndex: forceMode ? 99 : 999999 }}>
+      <div className="loading-infinity">
+        <div>
+          <span></span>
+        </div>
+        <div>
+          <span></span>
+        </div>
+        <div>
+          <span></span>
+        </div>
+      </div>
+    </StyledAppLoader>
   )
 }
 

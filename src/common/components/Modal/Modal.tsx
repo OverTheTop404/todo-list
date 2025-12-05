@@ -12,17 +12,18 @@ interface ModalProps {
 export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
   return (
     <ReactModal closeTimeoutMS={300} isOpen={isOpen} onRequestClose={onClose} className="modal-content" overlayClassName="modal-overlay">
-      <ModalWrapper>
-        {children}
-        <CloseBtn onClick={onClose}>
-          <X size={30} />
-        </CloseBtn>
-      </ModalWrapper>
+      <ModalWrapper>{children}</ModalWrapper>
+      <CloseBtn onClick={onClose}>
+        <X size={30} />
+      </CloseBtn>
     </ReactModal>
   )
 }
 
 const ModalWrapper = styled.div`
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
   padding: 20px;
 `

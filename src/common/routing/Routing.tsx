@@ -16,6 +16,7 @@ export const Path = {
   SignIn: '/login',
   SignUp: '/register',
   Dashboard: '/dashboard',
+  Board: '/board/:boardId',
   NotFound: '*',
 } as const
 
@@ -31,9 +32,10 @@ export const Routing = () => {
           <Route path={Path.Dashboard} element={<Dashboard />} />
           <Route path={'/my-tasks'} element={''} />
           <Route path={'/other-tasks'} element={''} />
-          <Route path={'/daily-tasks'} element={''} />
-          <Route path={'/armoglaze'} element={''} />
-          <Route path={'/rocketweb'} element={<WithScroll />} />
+          {/*<Route path={'/daily-tasks'} element={''} />*/}
+          {/*<Route path={'/armoglaze'} element={''} />*/}
+          {/*<Route path={'/rocketweb'} element={<WithScroll />} />*/}
+          <Route path={Path.Board} element={<WithScroll />} />
           <Route path={'/my-company'} element={''} />
           <Route path={'/news'} element={''} />
           <Route path={'/reports'} element={''} />
