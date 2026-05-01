@@ -21,6 +21,8 @@ export const Input = ({ todoListId, title, boardId, placeholder, inputHandler, r
   const [createTaskMutation] = useCreateTaskMutation() // Если удалить - белый экран!!!????????? Почему-то
   const [createTaskSbMutation] = useCreateTaskSbMutation()
 
+  console.log(createTaskMutation)
+
   const createHandler = () => {
     if (todoListId && boardId) {
       // createTaskMutation({ todoListId, title: letterTrim })
