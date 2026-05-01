@@ -31,7 +31,7 @@ export const sbAuthApi = supabaseApi.injectEndpoints({
     // Логаут
     logout: build.mutation<void, void>({
       query: () => ({ method: 'delete', url: '/auth/logout' }),
-      invalidatesTags: ['Auth', 'List', 'Cards'],
+      invalidatesTags: ['Auth', 'Board', 'List', 'Cards'],
     }),
 
     // Регистрация

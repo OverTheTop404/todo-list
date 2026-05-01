@@ -1,30 +1,30 @@
 import { RequestStatus } from '@/app/app-slice'
-import { todoListsApi } from '@/features/todolists/api/todoListsApi'
+import { todoListsSbApi } from '@/features/todolists/api/todoListsSbApi'
 
-export const changeModeAddTaskAC = (id: string, status: boolean) => {
-  return todoListsApi.util.updateQueryData('getTodoLists', undefined, (state) => {
-    const todoList = state.find((todo) => todo.id === id)
+export const changeModeAddTaskAC = ({ listId, boardId, status }: { listId: string; boardId: string; status: boolean }) => {
+  return todoListsSbApi.util.updateQueryData('getTodoLists', { board_id: boardId }, (state) => {
+    const todoList = state.find((todo) => todo.id === listId)
     if (todoList) todoList.addTaskStatus = status
   })
 }
 
-export const renameTodoModeAC = (id: string, status: boolean) => {
-  return todoListsApi.util.updateQueryData('getTodoLists', undefined, (state) => {
-    const todoList = state.find((todo) => todo.id === id)
+export const renameTodoModeAC = ({ listId, boardId, status }: { listId: string; boardId: string; status: boolean }) => {
+  return todoListsSbApi.util.updateQueryData('getTodoLists', { board_id: boardId }, (state) => {
+    const todoList = state.find((todo) => todo.id === listId)
     if (todoList) todoList.renameStatus = status
   })
 }
 
-export const changeHeadLineColorAC = (id: string, color: string) => {
-  return todoListsApi.util.updateQueryData('getTodoLists', undefined, (state) => {
-    const todoList = state.find((todo) => todo.id === id)
-    if (todoList) todoList.headLineColor = color
-  })
-}
+// export const changeHeadLineColorAC = ({ listId, boardId, color }: { listId: string; boardId: string; color: string }) => {
+//   return todoListsSbApi.util.updateQueryData('getTodoLists', { board_id: boardId }, (state) => {
+//     const todoList = state.find((todo) => todo.id === listId)
+//     if (todoList) todoList.head_line_color = color
+//   })
+// }
 
-export const changeTodoEntityStatus = (id: string, status: RequestStatus) => {
-  return todoListsApi.util.updateQueryData('getTodoLists', undefined, (state) => {
-    const todoList = state.find((todo) => todo.id === id)
+export const changeTodoEntityStatus = ({ listId, boardId, status }: { listId: string; boardId: string; status: RequestStatus }) => {
+  return todoListsSbApi.util.updateQueryData('getTodoLists', { board_id: boardId }, (state) => {
+    const todoList = state.find((todo) => todo.id === listId)
     if (todoList) todoList.entityStatus = status
   })
 }

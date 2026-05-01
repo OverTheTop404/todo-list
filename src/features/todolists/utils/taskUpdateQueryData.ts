@@ -1,24 +1,24 @@
-import { tasksApi } from '@/features/todolists/api/tasksApi'
+import { tasksSbApi } from '@/features/todolists/api/tasksSbApi'
 import type { RequestStatus } from '@/app/app-slice'
 
-export const sortAllTasks = (todoId: string, flag: boolean) => {
-  return tasksApi.util.updateQueryData('getTasks', todoId, (state) => {
-    state.items.sort((a, b) => {
-      return a.status === b.status ? 0 : flag ? (a.status ? -1 : 1) : a.status ? 1 : -1
+export const sortAllTasks = (listId: string, flag: boolean) => {
+  return tasksSbApi.util.updateQueryData('getTasks', { list_id: listId }, (state) => {
+    state.sort((a, b) => {
+      return a.is_completed === b.is_completed ? 0 : flag ? (a.is_completed ? -1 : 1) : a.is_completed ? 1 : -1
     })
   })
 }
 
-export const renameTaskMode = (taskId: string, todoId: string, mode: boolean) => {
-  return tasksApi.util.updateQueryData('getTasks', todoId, (state) => {
-    const task = state.items.find((task) => task.id === taskId)
+export const renameTaskMode = (taskId: string, listId: string, mode: boolean) => {
+  return tasksSbApi.util.updateQueryData('getTasks', { list_id: listId }, (state) => {
+    const task = state.find((task) => task.id === taskId)
     if (task) task.renameStatus = mode
   })
 }
 
-export const changeTaskEntityStatus = (taskId: string, todoId: string, status: RequestStatus) => {
-  return tasksApi.util.updateQueryData('getTasks', todoId, (state) => {
-    const task = state.items.find((task) => task.id === taskId)
+export const changeTaskEntityStatus = (taskId: string, listId: string, status: RequestStatus) => {
+  return tasksSbApi.util.updateQueryData('getTasks', { list_id: listId }, (state) => {
+    const task = state.find((task) => task.id === taskId)
     if (task) task.entityStatus = status
   })
 }

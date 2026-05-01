@@ -6,13 +6,13 @@ import styled from 'styled-components'
 import { FakeRow } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/FakeRow/FakeRow'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { selectViewTask } from '@/features/todolists/model/utility-slice'
-import { TaskStatus } from '@/common/enums/enams'
 import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
-import { useGetTasksQuery } from '@/features/todolists/api/tasksApi'
 import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
 import { TaskSkeleton } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TaskSceleton/TaskSceleton'
 import { EmptyBtn, StyledEmptyBtn } from '@/features/todolists/ui/TodoWorkSpace/TodoSkeleton/TodoSkeleton'
 import { Droppable } from '@hello-pangea/dnd'
+import { useGetTasksQuery } from '@/features/todolists/api/tasksSbApi'
+import { useEffect, useState } from 'react'
 
 type Props = {
   todoInfo: TodoListType
@@ -22,16 +22,22 @@ export const TodoBody = ({ todoInfo }: Props) => {
   const dispatch = useAppDispatch()
   const viewTask = useAppSelector(selectViewTask)
 
-  const { data: tasks, isLoading } = useGetTasksQuery(todoInfo.id)
+  const { data: tasks, isLoading } = useGetTasksQuery({ list_id: todoInfo.id })
 
-  let filteredTasksCopy = tasks?.items
-  if (viewTask === 'active') filteredTasksCopy = tasks?.items.filter((item) => item.status === TaskStatus.New)
-  if (viewTask === 'completed') filteredTasksCopy = tasks?.items.filter((item) => item.status === TaskStatus.Completed)
+  const [firstLoad, setFirstLoad] = useState(true)
 
-  if (isLoading) {
+  useEffect(() => {
+    setFirstLoad(false)
+  }, [])
+
+  let filteredTasksCopy = tasks
+  if (viewTask === 'active') filteredTasksCopy = tasks?.filter((item) => item.is_completed === false)
+  if (viewTask === 'completed') filteredTasksCopy = tasks?.filter((item) => item.is_completed === true)
+
+  if (isLoading && firstLoad) {
     return (
       <>
-        <TaskSkeleton taskRows={7} />
+        <TaskSkeleton taskRows={3} />
         <StyledEmptyBtn>
           <EmptyBtn />
         </StyledEmptyBtn>
@@ -51,12 +57,12 @@ export const TodoBody = ({ todoInfo }: Props) => {
                 <p style={{ marginBottom: `${todoInfo.addTaskStatus ? '10px' : '0'}` }}>There are no tasks</p>
               )}
               {provided.placeholder}
-              {todoInfo.addTaskStatus && <FakeRow todoListId={todoInfo.id} />}
+              {todoInfo.addTaskStatus && <FakeRow todoInfo={todoInfo} />}
             </ul>
           )}
         </Droppable>
       </StyledTodoBody>
-      <AddNewTaskBtn onClick={() => dispatch(changeModeAddTaskAC(todoInfo.id, true))}>
+      <AddNewTaskBtn onClick={() => dispatch(changeModeAddTaskAC({ listId: todoInfo.id, boardId: todoInfo.board_id, status: true }))}>
         <BadgePlus size={15} /> New task
       </AddNewTaskBtn>
     </>

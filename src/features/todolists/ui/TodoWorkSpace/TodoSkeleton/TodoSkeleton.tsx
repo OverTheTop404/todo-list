@@ -16,7 +16,7 @@ export const TodoSkeleton = () => {
             <SubMenuWrapper />
           </PanelTitle>
         </StyledTitle>
-        <TaskSkeleton taskRows={7} />
+        <TaskSkeleton taskRows={3} />
         <StyledEmptyBtn>
           <EmptyBtn />
         </StyledEmptyBtn>

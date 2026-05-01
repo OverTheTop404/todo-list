@@ -1,5 +1,4 @@
 import { Navigate, Route, Routes } from 'react-router'
-import { withDraggableScroll } from '@/common/hocs/withDraggableScroll'
 import { TodoWorkSpace } from '@/features/todolists/ui/TodoWorkSpace/TodoWorkSpace'
 import { PageNotFound } from '@/common/components/PageNotFound/PageNotFound'
 import { SignIn } from '@/features/auth/ui/SignIn/SignIn'
@@ -21,7 +20,7 @@ export const Path = {
 } as const
 
 export const Routing = () => {
-  const WithScroll = withDraggableScroll(TodoWorkSpace)
+  // const WithScroll = withDraggableScroll(TodoWorkSpace)
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
 
   return (
@@ -35,7 +34,7 @@ export const Routing = () => {
           {/*<Route path={'/daily-tasks'} element={''} />*/}
           {/*<Route path={'/armoglaze'} element={''} />*/}
           {/*<Route path={'/rocketweb'} element={<WithScroll />} />*/}
-          <Route path={Path.Board} element={<WithScroll />} />
+          <Route path={Path.Board} element={<TodoWorkSpace />} />
           <Route path={'/my-company'} element={''} />
           <Route path={'/news'} element={''} />
           <Route path={'/reports'} element={''} />

@@ -1,13 +1,19 @@
 import { type TaskPriority, TaskStatus } from '@/common/enums/enams'
 import { z } from 'zod/v4'
-import type { domainTaskSchema } from '@/features/todolists/lib/schemas'
+import { domainTaskSbSchema, type domainTaskSchema } from '@/features/todolists/lib/schemas'
 import type { RequestStatus } from '@/app/app-slice'
 
 export type DomainTask = z.infer<typeof domainTaskSchema>
+export type DomainSbTask = z.infer<typeof domainTaskSbSchema>
 
 export type TaskType = DomainTask & {
   renameStatus: boolean
-  entityStatus: RequestStatus // Временно string. Надо RequestStatus
+  entityStatus: RequestStatus
+}
+
+export type TaskSbType = DomainSbTask & {
+  renameStatus: boolean
+  entityStatus: RequestStatus
 }
 
 export type GetDomainTasksResponse = {

@@ -2,7 +2,6 @@ import styled from 'styled-components'
 import { TodoTitle } from './TodoTitle/TodoTitle.tsx'
 import React from 'react'
 import { TodoBody } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TodoBody'
-import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
 import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 import { Draggable } from '@hello-pangea/dnd'
 
@@ -24,7 +23,7 @@ export const TodoColumn = ({ todoInfo, index }: TodoItemProps) => {
             <TodoTitle todoInfo={todoInfo} dragHandleProps={provided.dragHandleProps} />
             <TodoBody todoInfo={todoInfo} />
           </StyledTodoItem>
-          {todoInfo.entityStatus === 'loading' && <EntityStatus />}
+          {/*{todoInfo.entityStatus === 'loading' && <EntityStatus />}*/}
         </ColumnWrapper>
       )}
     </Draggable>

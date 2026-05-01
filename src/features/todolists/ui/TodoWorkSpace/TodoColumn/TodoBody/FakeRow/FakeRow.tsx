@@ -12,16 +12,17 @@ import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { useState } from 'react'
 import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
 import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
+import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 
 type FakeRowProps = {
-  todoListId: string
+  todoInfo: TodoListType
 }
 
-export const FakeRow = ({ todoListId }: FakeRowProps) => {
+export const FakeRow = ({ todoInfo }: FakeRowProps) => {
   const dispatch = useAppDispatch()
   const [switchLoader, setSwitchLoader] = useState(false)
   const inputHandler = () => {
-    dispatch(changeModeAddTaskAC(todoListId, false))
+    dispatch(changeModeAddTaskAC({ listId: todoInfo.id, boardId: todoInfo.board_id, status: false }))
   }
 
   return (
@@ -30,7 +31,14 @@ export const FakeRow = ({ todoListId }: FakeRowProps) => {
         <StyledInput type={'checkbox'} checked={false} />
         <InputLabel />
         <InputWrapper>
-          <Input todoListId={todoListId} title={''} inputHandler={inputHandler} renameHandler={() => {}} switchLoader={setSwitchLoader} />
+          <Input
+            todoListId={todoInfo.id}
+            boardId={todoInfo.board_id}
+            title={''}
+            inputHandler={inputHandler}
+            renameHandler={() => {}}
+            switchLoader={setSwitchLoader}
+          />
         </InputWrapper>
       </TitleWrapper>
       <PanelTitle>

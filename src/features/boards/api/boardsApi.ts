@@ -7,14 +7,22 @@ export const boardsApi = supabaseApi.injectEndpoints({
     // Получение всех досок
     getBoards: builder.query<Board[], void>({
       queryFn: async () => {
-        const { data, error } = await supabase.from('boards').select('*').order('position', { ascending: true })
+        const { data, error } = await supabase
+          .from('boards')
+          .select('*')
+          .order('position', { ascending: true })
+          .order('created_at', { ascending: false })
 
         if (error) {
           return { error: error }
         }
         return { data: data || [] }
       },
-      providesTags: ['Board'],
+      providesTags: (result) => {
+        if (!result) return [{ type: 'Board', id: 'LIST' }]
+
+        return [...result.map((board) => ({ type: 'Board' as const, id: board.id })), { type: 'Board', id: 'LIST' }]
+      },
     }),
 
     // Получение доски по ID
@@ -27,7 +35,7 @@ export const boardsApi = supabaseApi.injectEndpoints({
         }
         return { data: data }
       },
-      providesTags: (result) => (result ? [{ type: 'Board', id: result.id }] : ['Board']),
+      providesTags: (result) => (result ? [{ type: 'Board', id: result.id }] : [{ type: 'Board', id: 'LIST' }]),
     }),
 
     // Создание новой доски
@@ -40,7 +48,7 @@ export const boardsApi = supabaseApi.injectEndpoints({
         }
         return { data: data }
       },
-      invalidatesTags: ['Board'],
+      invalidatesTags: [{ type: 'Board', id: 'LIST' }],
     }),
 
     // Обновление доски
@@ -51,9 +59,12 @@ export const boardsApi = supabaseApi.injectEndpoints({
         if (error) {
           return { error: error }
         }
-        return { data: data }
+        return { data }
       },
-      invalidatesTags: (result) => (result ? [{ type: 'Board', id: result.id }] : ['Board']),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Board', id: id }, // Инвалидируем конкретную доску
+        { type: 'Board', id: 'LIST' }, // Инвалидируем весь список
+      ],
     }),
 
     // Удаление доски
@@ -66,24 +77,24 @@ export const boardsApi = supabaseApi.injectEndpoints({
         }
         return { data: undefined }
       },
-      invalidatesTags: ['Board'],
+      invalidatesTags: [{ type: 'Board', id: 'LIST' }],
     }),
 
     // Обновление позиций досок
-    updateBoardsPosition: builder.mutation<void, { boards: Array<{ id: string; position: number }> }>({
-      queryFn: async ({ boards }) => {
-        const updates = boards.map((board) => supabase.from('boards').update({ position: board.position }).eq('id', board.id))
-
-        const results = await Promise.all(updates)
-        const error = results.find((result) => result.error)?.error
-
-        if (error) {
-          return { error: error }
-        }
-        return { data: undefined }
-      },
-      invalidatesTags: ['Board'],
-    }),
+    // updateBoardsPosition: builder.mutation<void, { boards: Array<{ id: string; position: number }> }>({
+    //   queryFn: async ({ boards }) => {
+    //     const updates = boards.map((board) => supabase.from('boards').update({ position: board.position }).eq('id', board.id))
+    //
+    //     const results = await Promise.all(updates)
+    //     const error = results.find((result) => result.error)?.error
+    //
+    //     if (error) {
+    //       return { error: error }
+    //     }
+    //     return { data: undefined }
+    //   },
+    //   invalidatesTags: ['Board'],
+    // }),
   }),
 })
 
@@ -93,5 +104,5 @@ export const {
   useCreateBoardMutation,
   useUpdateBoardMutation,
   useDeleteBoardMutation,
-  useUpdateBoardsPositionMutation,
+  //useUpdateBoardsPositionMutation,
 } = boardsApi

@@ -5,12 +5,17 @@ import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 
 import { useEffect } from 'react'
 import { loaderStatusAC, setIsLoggedIn } from '@/app/app-slice'
-// import domWrap from '../../../assets/images/domik-wrap.jpg'
-import loginBg from '../assets/images/DeeDoesAI.webp'
 import { useAuthMeQuery } from '@/features/auth/api/sbAuthApi'
+import { useParams } from 'react-router'
+import { useGetBoardByIdQuery } from '@/features/boards/api/boardsApi'
 
 export const App = () => {
   const dispatch = useAppDispatch()
+  const params = useParams()
+  //console.log(params)
+  const { data: boardData } = useGetBoardByIdQuery(params.boardId!, {
+    skip: !params.boardId,
+  })
 
   const { data, isLoading } = useAuthMeQuery()
 
@@ -26,15 +31,16 @@ export const App = () => {
   }, [isLoading])
 
   return (
-    <Application>
+    <Application backgroundImage={boardData?.image_url}>
       {!isLoading && <Routing />}
       <AppLoader />
     </Application>
   )
 }
 
-export const Application = styled.div`
-  background: url(${loginBg}) 50% 50% no-repeat;
+export const Application = styled.div<{ backgroundImage?: string }>`
+  background: url(${(props) => props.backgroundImage || 'https://wafkhyzjimyjwfpugwzs.supabase.co/storage/v1/object/public/OTT%20S3/DeeDoesAI.webp'})
+    50% 50% no-repeat;
   background-size: cover;
   display: flex;
   flex-direction: row;

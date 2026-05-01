@@ -3,16 +3,14 @@ import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react'
 import { InputWrapper, TitleWrapper } from '../../TodoTitle/TodoTitle.tsx'
 import { Input } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/Input'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { TaskStatus } from '@/common/enums/enams'
-import { EntityStatus } from '@/common/components/EntityStatus/EntityStatus'
-import { useDeleteTaskMutation, useUpdateTaskMutation } from '@/features/todolists/api/tasksApi'
-import { modelCreator, type TaskType } from '@/features/todolists/api/tasksApi.types'
+import { type TaskSbType } from '@/features/todolists/api/tasksApi.types'
 import { changeTaskEntityStatus, renameTaskMode } from '@/features/todolists/utils/taskUpdateQueryData'
 import { usePopup } from '@/common/hooks/usePopup'
 import { Draggable } from '@hello-pangea/dnd'
+import { useUpdateTaskMutation, useDeleteTaskMutation } from '@/features/todolists/api/tasksSbApi'
 
 type StyledInputProps = {
-  taskInfo: TaskType
+  taskInfo: TaskSbType
   index: number
 }
 
@@ -23,35 +21,45 @@ export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
   const [deleteTaskMutation] = useDeleteTaskMutation()
 
   const inputHandler = () => {
-    dispatch(renameTaskMode(taskInfo.id, taskInfo.todoListId, false))
+    dispatch(renameTaskMode(taskInfo.id, taskInfo.list_id, false))
   }
 
   const renameHandler = (title: string) => {
-    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'loading'))
-    updateTask({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model: { ...modelCreator(taskInfo), title } }).then(() => {
-      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'idle'))
+    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.list_id, 'loading'))
+    updateTask({
+      task_id: taskInfo.id,
+      list_id: taskInfo.list_id,
+      updates: { title },
+    }).then(() => {
+      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.list_id, 'idle'))
     })
   }
 
   const changeTaskStatusHandler = () => {
-    const newStatus = taskInfo.status === TaskStatus.New ? TaskStatus.Completed : TaskStatus.New
-    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'loading'))
-    updateTask({ todolistId: taskInfo.todoListId, taskId: taskInfo.id, model: { ...modelCreator(taskInfo), status: newStatus } }).then(() => {
-      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'idle'))
+    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.list_id, 'loading'))
+    updateTask({
+      task_id: taskInfo.id,
+      list_id: taskInfo.list_id,
+      updates: { is_completed: !taskInfo.is_completed },
+    }).then(() => {
+      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.list_id, 'idle'))
+    })
+  }
+
+  const deleteTaskHandler = () => {
+    togglePopup(false)
+    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.list_id, 'loading'))
+    deleteTaskMutation({
+      list_id: taskInfo.list_id,
+      task_id: taskInfo.id,
+    }).then(() => {
+      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.list_id, 'idle'))
     })
   }
 
   const titlePencilHandler = () => {
     togglePopup(false)
-    dispatch(renameTaskMode(taskInfo.id, taskInfo.todoListId, true))
-  }
-
-  const deleteTaskHandler = () => {
-    togglePopup(false)
-    dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'loading'))
-    deleteTaskMutation({ todolistId: taskInfo.todoListId, taskId: taskInfo.id }).then(() => {
-      dispatch(changeTaskEntityStatus(taskInfo.id, taskInfo.todoListId, 'idle'))
-    })
+    dispatch(renameTaskMode(taskInfo.id, taskInfo.list_id, true))
   }
 
   return (
@@ -61,11 +69,11 @@ export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={taskInfo.status === TaskStatus.Completed ? 'checkedView' : ''}
+          className={taskInfo.is_completed ? 'checkedView' : ''}
         >
           {taskInfo.renameStatus ? (
             <TitleWrapper className={'edit'}>
-              <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} onChange={() => {}} />
+              <StyledInput type={'checkbox'} checked={taskInfo.is_completed} onChange={() => {}} />
               <InputLabel />
               <InputWrapper>
                 <Input title={taskInfo.title} inputHandler={inputHandler} renameHandler={renameHandler} />
@@ -73,7 +81,7 @@ export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
             </TitleWrapper>
           ) : (
             <TitleWrapper>
-              <StyledInput type={'checkbox'} checked={taskInfo.status === TaskStatus.Completed} onChange={() => {}} />
+              <StyledInput type={'checkbox'} checked={taskInfo.is_completed} onChange={() => {}} />
               <InputLabel onClick={() => changeTaskStatusHandler()}></InputLabel>
               <div>
                 <LabelText onClick={() => changeTaskStatusHandler()}>{taskInfo.title}</LabelText>
@@ -96,7 +104,7 @@ export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
               )}
             </SubMenuWrapper>
           </PanelTitle>
-          {taskInfo.entityStatus === 'loading' && <EntityStatus entity={'task'} />}
+          {/*{taskInfo.entityStatus === 'loading' && <EntityStatus entity={'task'} />}*/}
         </StyledRow>
       )}
     </Draggable>

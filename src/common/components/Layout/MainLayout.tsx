@@ -22,6 +22,7 @@ export const MainLayout = ({ children }: Props) => {
 
 const MainLayoutContent = styled.div`
   position: relative;
+  height: 100%;
 `
 const WorkSpace = styled.div`
   display: flex;

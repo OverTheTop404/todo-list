@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react'
 import styled from 'styled-components'
 import { Outlet } from 'react-router'
-import loginBg from '../../../assets/images/DeeDoesAI.webp'
 
 type Props = {
   children?: ReactNode
@@ -12,7 +11,7 @@ export const SignLayout = ({ children }: Props) => {
 }
 
 const LayoutLogin = styled.div`
-  background: url(${loginBg}) 50% 50% no-repeat;
+  background: url('https://wafkhyzjimyjwfpugwzs.supabase.co/storage/v1/object/public/OTT%20S3/DeeDoesAI.webp') 50% 50% no-repeat;
   background-size: cover;
   display: flex;
   flex-direction: row;

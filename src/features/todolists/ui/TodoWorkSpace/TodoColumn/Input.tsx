@@ -1,13 +1,13 @@
 import styled from 'styled-components'
 import { ChangeEvent, type Dispatch, KeyboardEvent, type SetStateAction, useRef, useState } from 'react'
-import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { useAddTodoListMutation } from '@/features/todolists/api/todoListsApi'
 import { useCreateTaskMutation } from '@/features/todolists/api/tasksApi'
-import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
-import { modeAddTodoAC } from '@/app/app-slice'
+import { useCreateTaskMutation as useCreateTaskSbMutation } from '@/features/todolists/api/tasksSbApi'
+import { useAddTodoListMutation } from '@/features/todolists/api/todoListsSbApi'
+import { useParams } from 'react-router'
 
 type Props = {
   todoListId?: string
+  boardId?: string
   title?: string
   placeholder?: string
   inputHandler: () => void
@@ -15,21 +15,18 @@ type Props = {
   switchLoader?: Dispatch<SetStateAction<boolean>>
 }
 
-export const Input = ({ todoListId, title, placeholder, inputHandler, renameHandler, switchLoader }: Props) => {
-  const dispatch = useAppDispatch()
-
+export const Input = ({ todoListId, title, boardId, placeholder, inputHandler, renameHandler, switchLoader }: Props) => {
+  const params = useParams()
   const [addTodoListMutation] = useAddTodoListMutation()
-  const [createTaskMutation] = useCreateTaskMutation()
+  const [createTaskMutation] = useCreateTaskMutation() // Если удалить - белый экран!!!????????? Почему-то
+  const [createTaskSbMutation] = useCreateTaskSbMutation()
 
   const createHandler = () => {
-    if (todoListId) {
-      createTaskMutation({ todoListId, title: letterTrim }).finally(() => {
-        dispatch(changeModeAddTaskAC(todoListId, false))
-      })
+    if (todoListId && boardId) {
+      // createTaskMutation({ todoListId, title: letterTrim })
+      createTaskSbMutation({ boardId, list_id: todoListId, title: letterTrim })
     } else {
-      addTodoListMutation(letterTrim).finally(() => {
-        dispatch(modeAddTodoAC({ status: false }))
-      })
+      addTodoListMutation({ title: letterTrim, board_id: params.boardId! })
     }
   }
 

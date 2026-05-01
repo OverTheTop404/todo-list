@@ -3,26 +3,55 @@ import type { Board } from '@/features/boards/api/boardsApi.types'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useDeleteBoardMutation } from '@/features/boards/api/boardsApi'
 
+import { NavLink } from 'react-router'
+import { ModalBoard } from '@/pages/dashboard/ui/ModalBoard/ModalBoard'
+import { useModal } from '@/common/hooks/useModal'
+import { setNoticeAC } from '@/app/app-slice'
+import { useAppDispatch } from '@/common/hooks/useAppDispatch'
+
 type Props = {
   data: Board
 }
 
 export const BoardCard = ({ data: board }: Props) => {
+  const dispatch = useAppDispatch()
+  const { isOpen, openModal, closeModal } = useModal()
   const [deleteBoard] = useDeleteBoardMutation()
 
-  // const handleEdit = () => {}
-  const handleDelete = (id: string) => {
-    deleteBoard({ id })
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this board?')) {
+      try {
+        await deleteBoard({ id })
+        dispatch(
+          setNoticeAC({
+            noticeMessage: `Board "${board.title}" deleted successfully`,
+            noticeType: 'success',
+          }),
+        )
+      } catch (error: any) {
+        dispatch(
+          setNoticeAC({
+            noticeMessage: error.message || 'Failed to delete board',
+            noticeType: 'error',
+          }),
+        )
+      }
+    }
   }
 
   return (
-    <Board style={{ backgroundImage: `url(${board.image_url})`, backgroundSize: 'cover' }}>
-      <span>{board.title}</span>
-      <PanelTitle>
-        <Pencil size={17} onClick={() => {}} />
-        <Trash2 size={17} onClick={() => handleDelete(board.id)} />
-      </PanelTitle>
-    </Board>
+    <>
+      <Board style={{ backgroundImage: `url(${board.image_url})`, backgroundSize: 'cover' }}>
+        <NavLink to={`/board/${board.id}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}>
+          <span>{board.title}</span>
+        </NavLink>
+        <PanelTitle>
+          <Pencil size={17} onClick={openModal} />
+          <Trash2 size={17} onClick={() => handleDelete(board.id)} />
+        </PanelTitle>
+      </Board>
+      <ModalBoard board={board} closeModal={closeModal} isOpen={isOpen} />
+    </>
   )
 }
 

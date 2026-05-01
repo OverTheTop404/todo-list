@@ -46,18 +46,18 @@ export const MainMenuNew = () => {
     topMenu: [
       {
         title: 'Dashboard',
-        link: 'dashboard',
+        link: '/dashboard',
         icon: <LayoutDashboard size={20} />,
       },
       {
         title: 'My tasks',
-        link: 'my-tasks',
+        link: '/my-tasks',
         icon: <User size={20} />,
         rightInfo: 5,
       },
       {
         title: 'Other tasks',
-        link: 'other-tasks',
+        link: '/other-tasks',
         icon: <Users size={20} />,
       },
       {
@@ -68,7 +68,7 @@ export const MainMenuNew = () => {
           { title: 'Create new board', icon: <Plus size={20} /> },
           ...(dataBoard ?? []).map((board) => ({
             title: board.title,
-            link: `board/${board.id}`,
+            link: `/board/${board.id}`,
             image: board.image_url,
           })),
         ],
@@ -87,11 +87,11 @@ export const MainMenuNew = () => {
       },
     ],
     bottomMenu: [
-      { title: 'My company', link: 'my-company', icon: <Building2 size={20} /> },
-      { title: 'News', link: 'news', icon: <LayoutList size={20} />, rightInfo: '+5' },
-      { title: 'Reports', link: 'reports', icon: <FileInput size={20} /> },
-      { title: 'License', link: 'license', icon: <FileText size={20} /> },
-      { title: 'Support', link: 'support', icon: <Headset size={20} /> },
+      { title: 'My company', link: '/my-company', icon: <Building2 size={20} /> },
+      { title: 'News', link: '/news', icon: <LayoutList size={20} />, rightInfo: '+5' },
+      { title: 'Reports', link: '/reports', icon: <FileInput size={20} /> },
+      { title: 'License', link: '/license', icon: <FileText size={20} /> },
+      { title: 'Support', link: '/support', icon: <Headset size={20} /> },
     ],
   }
 
