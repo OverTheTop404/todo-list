@@ -69,7 +69,7 @@ export const TodoBody = ({ todoInfo }: Props) => {
   )
 }
 
-const StyledTodoBody = styled.ul`
+const StyledTodoBody = styled.div`
   padding: 0 15px;
 `
 

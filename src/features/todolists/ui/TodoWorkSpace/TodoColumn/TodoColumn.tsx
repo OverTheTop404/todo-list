@@ -1,16 +1,26 @@
 import styled from 'styled-components'
 import { TodoTitle } from './TodoTitle/TodoTitle.tsx'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { TodoBody } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TodoBody'
 import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 import { Draggable } from '@hello-pangea/dnd'
+import { useGetTasksQuery } from '@/features/todolists/api/tasksSbApi'
 
 type TodoItemProps = {
   todoInfo: TodoListType
   index: number
+  onTasksLoaded?: (tasks: any[]) => void
 }
 
-export const TodoColumn = ({ todoInfo, index }: TodoItemProps) => {
+export const TodoColumn = ({ todoInfo, index, onTasksLoaded }: TodoItemProps) => {
+  const { data: tasks } = useGetTasksQuery({ list_id: todoInfo.id })
+
+  useEffect(() => {
+    if (tasks && onTasksLoaded) {
+      onTasksLoaded(tasks)
+    }
+  }, [tasks, onTasksLoaded, todoInfo.id])
+
   const stopHorizontalScrollOnClickColumn = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
   }
@@ -23,7 +33,6 @@ export const TodoColumn = ({ todoInfo, index }: TodoItemProps) => {
             <TodoTitle todoInfo={todoInfo} dragHandleProps={provided.dragHandleProps} />
             <TodoBody todoInfo={todoInfo} />
           </StyledTodoItem>
-          {/*{todoInfo.entityStatus === 'loading' && <EntityStatus />}*/}
         </ColumnWrapper>
       )}
     </Draggable>

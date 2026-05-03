@@ -83,10 +83,10 @@ export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
             <TitleWrapper>
               <StyledInput type={'checkbox'} checked={taskInfo.is_completed} onChange={() => {}} />
               <InputLabel onClick={() => changeTaskStatusHandler()}></InputLabel>
-              <div>
+              <LabelWrap>
                 <LabelText onClick={() => changeTaskStatusHandler()}>{taskInfo.title}</LabelText>
                 <Pencil size={20} onClick={titlePencilHandler} />
-              </div>
+              </LabelWrap>
             </TitleWrapper>
           )}
           <PanelTitle>
@@ -110,6 +110,13 @@ export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
     </Draggable>
   )
 }
+
+const LabelWrap = styled.div`
+  cursor: pointer;
+  & svg:hover {
+    cursor: pointer;
+  }
+`
 
 export const PanelTitle = styled.div`
   display: flex;

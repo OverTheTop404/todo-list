@@ -21,7 +21,7 @@ export const Input = ({ todoListId, title, boardId, placeholder, inputHandler, r
   const [createTaskMutation] = useCreateTaskMutation() // Если удалить - белый экран!!!????????? Почему-то
   const [createTaskSbMutation] = useCreateTaskSbMutation()
 
-  console.log(createTaskMutation)
+  console.log(createTaskMutation) // Чтобы прошёл деплой на vercel
 
   const createHandler = () => {
     if (todoListId && boardId) {
@@ -55,6 +55,7 @@ export const Input = ({ todoListId, title, boardId, placeholder, inputHandler, r
     }
     if (title?.length && letterTrim.length && title !== letterTrim) {
       renameHandler(letterTrim)
+      inputHandler()
     }
   }
 

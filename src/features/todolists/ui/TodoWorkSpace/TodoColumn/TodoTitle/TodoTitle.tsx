@@ -105,7 +105,7 @@ export const TodoTitle = ({ todoInfo, dragHandleProps }: TodoTitleProps) => {
 export const StyledTitle = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: start;
   padding: 10px 15px;
   border-radius: 4px;
 `
@@ -169,6 +169,7 @@ export const InputWrapper = styled.div`
 export const PanelTitle = styled.div`
   display: flex;
   flex-direction: row;
+  padding-top: 3px;
 `
 export const SubMenuWrapper = styled.div`
   display: flex;

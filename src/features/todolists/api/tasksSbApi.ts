@@ -1,7 +1,6 @@
 import type { TaskSbType } from '@/features/todolists/api/tasksApi.types'
 import { supabaseApi } from '@/app/supabaseApi'
 import { supabase } from '@/app/supaBaseClient'
-import { modeAddTodoAC } from '@/app/app-slice'
 import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
 
 export const tasksSbApi = supabaseApi.injectEndpoints({
@@ -9,14 +8,12 @@ export const tasksSbApi = supabaseApi.injectEndpoints({
     getTasks: build.query<TaskSbType[], { list_id: string }>({
       queryFn: async ({ list_id }) => {
         try {
-          const { data: tasks, error } = await supabase
-            .from('cards')
-            .select('*')
-            .eq('list_id', list_id)
-            .order('position', { ascending: true })
-            .order('created_at', { ascending: false })
+          const { data: tasks, error } = await supabase.from('cards').select('*').eq('list_id', list_id).order('position', { ascending: true })
+          //.order('created_at', { ascending: false })
 
-          if (error) throw error
+          if (error) {
+            return { error: error as Error }
+          }
 
           const transformData = tasks?.map((item) => ({
             ...item,
@@ -41,14 +38,16 @@ export const tasksSbApi = supabaseApi.injectEndpoints({
               {
                 list_id,
                 title,
-                position: 0,
+                //position: 0,
                 is_completed: false,
               },
             ])
             .select()
             .single()
 
-          if (error) throw error
+          if (error) {
+            return { error: error as Error }
+          }
 
           const transformData = {
             ...newTask,
@@ -62,16 +61,23 @@ export const tasksSbApi = supabaseApi.injectEndpoints({
         }
       },
       async onQueryStarted({ list_id, title, boardId }, { dispatch, queryFulfilled }) {
-        dispatch(modeAddTodoAC({ status: false }))
         dispatch(changeModeAddTaskAC({ listId: list_id, boardId, status: false }))
         const tempId = `temp-${Date.now()}-${Math.random()}`
         const patchResult = dispatch(
           tasksSbApi.util.updateQueryData('getTasks', { list_id }, (draft) => {
+            // Вычисляем максимальную позицию
+            let maxPosition = 0
+            draft.forEach((task) => {
+              if (task.position > maxPosition) {
+                maxPosition = task.position
+              }
+            })
+
             const optimisticTask: TaskSbType = {
               id: tempId,
               title,
               list_id,
-              position: draft.length + 1,
+              position: maxPosition + 1,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
               description: null,
@@ -81,12 +87,14 @@ export const tasksSbApi = supabaseApi.injectEndpoints({
               renameStatus: false,
               entityStatus: 'idle',
             }
-            draft.unshift(optimisticTask)
+            console.log('Optimistic position:', optimisticTask.position)
+            draft.push(optimisticTask)
           }),
         )
 
         try {
           const { data: realData } = await queryFulfilled
+          console.log('Real data from server:', realData)
           dispatch(
             tasksSbApi.util.updateQueryData('getTasks', { list_id }, (draft) => {
               const tempIndex = draft.findIndex((item) => item.id === tempId)
@@ -202,7 +210,9 @@ export const tasksSbApi = supabaseApi.injectEndpoints({
         try {
           const { data: task, error } = await supabase.from('cards').select('*').eq('id', task_id).single()
 
-          if (error) throw error
+          if (error) {
+            return { error: error as Error }
+          }
 
           const transformData = {
             ...task,
