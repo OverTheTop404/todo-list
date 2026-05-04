@@ -10,7 +10,7 @@ import { toast } from 'react-toastify/unstyled'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
 import { IconSvgSprite } from '@/common/components/IconSvgSprite/IconSvgSprite'
 import { Path } from '@/common/routing/Routing'
-import { useLoginMutation } from '../../api/sbAuthApi'
+import { useLoginMutation, useLoginWithGitHubMutation } from '../../api/sbAuthApi'
 import { loaderStatusAC, setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
 import { Link, useNavigate } from 'react-router'
 import { supabaseApi } from '@/app/supabaseApi'
@@ -29,6 +29,17 @@ export const SignIn = () => {
   })
 
   const [login] = useLoginMutation()
+  const [loginWithGitHub] = useLoginWithGitHubMutation()
+
+  const handleGitHubLogin = async () => {
+    try {
+      dispatch(loaderStatusAC({ status: 'loading' }))
+      await loginWithGitHub().unwrap()
+    } catch (error: any) {
+      dispatch(setNoticeAC({ noticeMessage: error.message, noticeType: 'error' }))
+      dispatch(loaderStatusAC({ status: 'idle' }))
+    }
+  }
 
   const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
     try {
@@ -75,7 +86,8 @@ export const SignIn = () => {
           <h2>Sign in with</h2>
         </FormLabel>
         <SocOption>
-          <SocOptionRow>
+          asdas
+          <SocOptionRow onClick={handleGitHubLogin}>
             <IconSvgSprite iconId="github" width={'25px'} height={'25px'} viewBox={'0 0 20 20'} /> GitHub
           </SocOptionRow>
           <SocOptionRow>
