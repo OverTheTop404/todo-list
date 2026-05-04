@@ -10,8 +10,8 @@ import {
   LayoutList,
   MessagesSquare,
   Plus,
-  User,
-  Users,
+  // User,
+  // Users,
 } from 'lucide-react'
 import Andrey from '../../../assets/images/users/andrey3.jpg'
 import React, { useState } from 'react'
@@ -57,17 +57,17 @@ export const MainMenuNew = () => {
         link: '/dashboard',
         icon: <LayoutDashboard size={20} />,
       },
-      {
-        title: 'My tasks',
-        link: '/my-tasks',
-        icon: <User size={20} />,
-        rightInfo: 5,
-      },
-      {
-        title: 'Other tasks',
-        link: '/other-tasks',
-        icon: <Users size={20} />,
-      },
+      // {
+      //   title: 'My tasks',
+      //   link: '/my-tasks',
+      //   icon: <User size={20} />,
+      //   rightInfo: 5,
+      // },
+      // {
+      //   title: 'Other tasks',
+      //   link: '/other-tasks',
+      //   icon: <Users size={20} />,
+      // },
       {
         title: 'Boards',
         icon: <BriefcaseBusiness size={20} />,
