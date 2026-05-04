@@ -20,9 +20,9 @@ type Props = {
 
 export const TodoBody = ({ todoInfo }: Props) => {
   const dispatch = useAppDispatch()
+  // const location = useLocation()
+  //const params = useParams()
   const viewTask = useAppSelector(selectViewTask)
-
-  const { data: tasks, isLoading } = useGetTasksQuery({ list_id: todoInfo.id })
 
   const [firstLoad, setFirstLoad] = useState(true)
 
@@ -30,11 +30,28 @@ export const TodoBody = ({ todoInfo }: Props) => {
     setFirstLoad(false)
   }, [])
 
+  //const needSkip = params.boardId !== todoInfo.board_id
+
+  const { data: tasks, isLoading } = useGetTasksQuery(
+    { list_id: todoInfo.id },
+    {
+      skip: firstLoad,
+    },
+  )
+
+  // const [firstLoad, setFirstLoad] = useState(true)
+  //
+  // const boardId = location.pathname.split('/').pop()
+  //
+  // useEffect(() => {
+  //   boardId === todoInfo.board_id ? setFirstLoad(true) : setFirstLoad(true)
+  // }, [boardId])
+
   let filteredTasksCopy = tasks
   if (viewTask === 'active') filteredTasksCopy = tasks?.filter((item) => item.is_completed === false)
   if (viewTask === 'completed') filteredTasksCopy = tasks?.filter((item) => item.is_completed === true)
 
-  if (isLoading && firstLoad) {
+  if (isLoading) {
     return (
       <>
         <TaskSkeleton taskRows={3} />

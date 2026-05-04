@@ -45,6 +45,7 @@ export const StyledTodoItem = styled.div`
   border-radius: 4px;
   box-shadow: 0 0 5px 0;
   background-color: #ebecf0;
+  max-width: 375px;
 `
 
 export const ColumnWrapper = styled.div`

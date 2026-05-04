@@ -31,7 +31,7 @@ export const TodoTitle = ({ todoInfo, dragHandleProps }: TodoTitleProps) => {
   }
 
   useEffect(() => {
-    !showPopupColorPicker && color !== head_line_color && updateTodoListMutation({ id, head_line_color: color })
+    !showPopupColorPicker && color !== head_line_color && updateTodoListMutation({ id, board_id, head_line_color: color })
   }, [showPopupColorPicker])
 
   const titlePencilHandler = () => {
@@ -42,7 +42,7 @@ export const TodoTitle = ({ todoInfo, dragHandleProps }: TodoTitleProps) => {
 
   const renameHandler = (title: string) => {
     dispatch(changeTodoEntityStatus({ listId: id, boardId: board_id, status: 'loading' }))
-    updateTodoListMutation({ id, title }).then(() => {
+    updateTodoListMutation({ id, title, board_id }).then(() => {
       dispatch(changeTodoEntityStatus({ listId: id, boardId: board_id, status: 'idle' }))
     })
   }
@@ -108,6 +108,7 @@ export const StyledTitle = styled.div`
   align-items: start;
   padding: 10px 15px;
   border-radius: 4px;
+  gap: 5px;
 `
 const ColorMenu = styled.div`
   position: absolute;
