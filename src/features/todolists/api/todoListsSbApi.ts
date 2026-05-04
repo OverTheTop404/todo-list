@@ -49,6 +49,7 @@ export const todoListsSbApi = supabaseApi.injectEndpoints({
               id: tempId,
               title,
               board_id,
+              isNew: true,
               position: draft.length,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
@@ -73,6 +74,7 @@ export const todoListsSbApi = supabaseApi.injectEndpoints({
                   entityStatus: 'idle',
                   renameStatus: false,
                   addTaskStatus: false,
+                  isNew: true,
                 }
               }
             }),

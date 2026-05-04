@@ -7,10 +7,24 @@ import { useModal } from '@/common/hooks/useModal'
 import { useGetBoardsQuery } from '@/features/boards/api/boardsApi'
 import { BoardCard } from '@/pages/dashboard/ui/BoardCard/BoardCard'
 import { ModalBoard } from '@/pages/dashboard/ui/ModalBoard/ModalBoard'
+import { useAuthMeQuery } from '@/features/auth/api/sbAuthApi'
+import { useEffect } from 'react'
 
 export const Dashboard = () => {
   const { isOpen, openModal, closeModal } = useModal()
-  const { data: dataBoard } = useGetBoardsQuery()
+
+  const { data: userData } = useAuthMeQuery()
+  const isAuthenticated = !!userData?.user
+
+  const { data: dataBoard, refetch } = useGetBoardsQuery(undefined, {
+    skip: !isAuthenticated,
+  })
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      refetch()
+    }
+  }, [isAuthenticated, refetch])
 
   return (
     <PageWrapper>
@@ -49,6 +63,7 @@ const SystemInform = styled.div`
 const PageWrapper = styled.div`
   padding: 30px;
 `
+
 const CreateBoard = styled.div`
   display: flex;
   justify-content: center;
@@ -85,6 +100,7 @@ const CreateBoard = styled.div`
     }
   }
 `
+
 const YourBoardsWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -93,4 +109,3 @@ const YourBoardsWrapper = styled.div`
   margin-top: 30px;
   gap: 30px;
 `
-//background: url(${loginBg}) 50% 50% no-repeat;

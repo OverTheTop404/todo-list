@@ -7,9 +7,19 @@ export const boardsApi = supabaseApi.injectEndpoints({
     // Получение всех досок
     getBoards: builder.query<Board[], void>({
       queryFn: async () => {
+        // Получаем текущего пользователя
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+          return { data: [] }
+        }
+
         const { data, error } = await supabase
           .from('boards')
           .select('*')
+          .eq('user_id', user.id) // Фильтруем по user_id
           .order('position', { ascending: true })
           .order('created_at', { ascending: false })
 
@@ -20,7 +30,6 @@ export const boardsApi = supabaseApi.injectEndpoints({
       },
       providesTags: (result) => {
         if (!result) return [{ type: 'Board', id: 'LIST' }]
-
         return [...result.map((board) => ({ type: 'Board' as const, id: board.id })), { type: 'Board', id: 'LIST' }]
       },
     }),

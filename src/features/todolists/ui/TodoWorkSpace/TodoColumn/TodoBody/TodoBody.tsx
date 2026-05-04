@@ -11,8 +11,9 @@ import { TaskSkeleton } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/T
 import { EmptyBtn, StyledEmptyBtn } from '@/features/todolists/ui/TodoWorkSpace/TodoSkeleton/TodoSkeleton'
 import { Droppable } from '@hello-pangea/dnd'
 import { useGetTasksQuery } from '@/features/todolists/api/tasksSbApi'
-import { useEffect, useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { selectSortDirection, selectViewTask, sortTasksAC, viewTaskAC } from '@/app/app-slice'
+import { skipToken } from '@reduxjs/toolkit/query'
 
 type Props = {
   todoInfo: TodoListType
@@ -23,29 +24,16 @@ export const TodoBody = ({ todoInfo }: Props) => {
   const viewTask = useAppSelector(selectViewTask)
   const sortDirection = useAppSelector(selectSortDirection)
 
-  const [firstLoad, setFirstLoad] = useState(true)
+  const queryArg = todoInfo.isNew ? skipToken : { list_id: todoInfo.id }
 
-  useEffect(() => {
-    setFirstLoad(false)
-  }, [])
+  const { data: tasks, isLoading } = useGetTasksQuery(queryArg)
 
-  const { data: tasks, isLoading } = useGetTasksQuery(
-    { list_id: todoInfo.id },
-    {
-      skip: firstLoad,
-    },
-  )
-
-  // Проверяем, активны ли фильтры или сортировка
   const isDraggable = viewTask === 'all' && sortDirection === 'default'
-
-  // Функция сброса всех фильтров и сортировки
   const resetToDefault = () => {
     dispatch(viewTaskAC({ viewTask: 'all' }))
     dispatch(sortTasksAC({ direction: 'default' }))
   }
 
-  // Применяем фильтрацию и сортировку с помощью useMemo для оптимизации
   const processedTasks = useMemo(() => {
     if (!tasks) return []
 
@@ -60,7 +48,6 @@ export const TodoBody = ({ todoInfo }: Props) => {
 
     // Сортировка
     if (sortDirection === 'default') {
-      // Сортировка по position (по умолчанию, для DnD)
       filtered.sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
     } else if (sortDirection === 'completed-first') {
       filtered.sort((a, b) => {
@@ -77,7 +64,8 @@ export const TodoBody = ({ todoInfo }: Props) => {
     return filtered
   }, [tasks, viewTask, sortDirection])
 
-  if (isLoading) {
+  // Показываем скелетон только если загружаем реальные данные (не новый список)
+  if (isLoading && !todoInfo.isNew) {
     return (
       <>
         <TaskSkeleton taskRows={3} />

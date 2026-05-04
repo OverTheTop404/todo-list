@@ -8,6 +8,7 @@ export type TodoListType = DomainTodoLists & {
   entityStatus: RequestStatus
   renameStatus: boolean
   addTaskStatus: boolean
+  isNew?: boolean
 }
 export type List = {
   id: string

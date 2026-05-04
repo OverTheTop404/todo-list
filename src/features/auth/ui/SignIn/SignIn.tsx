@@ -12,10 +12,12 @@ import { IconSvgSprite } from '@/common/components/IconSvgSprite/IconSvgSprite'
 import { Path } from '@/common/routing/Routing'
 import { useLoginMutation } from '../../api/sbAuthApi'
 import { loaderStatusAC, setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router' // Добавляем useNavigate
+import { supabaseApi } from '@/app/supabaseApi' // Добавляем baseApi
 
 export const SignIn = () => {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate() // Добавляем navigate
 
   const {
     register,
@@ -26,7 +28,6 @@ export const SignIn = () => {
     resolver: zodResolver(loginSchema),
   })
 
-  //const [mutation] = useLoginMutation()
   const [login] = useLoginMutation()
 
   const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
@@ -36,20 +37,20 @@ export const SignIn = () => {
         email: data.email,
         password: data.password,
       }).unwrap()
+
+      // Инвалидируем все теги после успешного логина
+      dispatch(supabaseApi.util.invalidateTags(['Board', 'Auth']))
+
       dispatch(setNoticeAC({ noticeMessage: 'Success Login', noticeType: 'info' }))
       dispatch(setIsLoggedIn({ isLoggedIn: true }))
+
+      // Перенаправляем на дашборд
+      navigate('/dashboard')
     } catch (error: any) {
       dispatch(setNoticeAC({ noticeMessage: error.message, noticeType: 'error' }))
     } finally {
       dispatch(loaderStatusAC({ status: 'idle' }))
     }
-    // mutation(data).then((res) => {
-    //   if (res.data?.resultCode === ResultCode.Success) {
-    //     dispatch(setNoticeAC({ noticeMessage: 'Success Login', noticeType: 'info' }))
-    //     dispatch(setIsLoggedIn({ isLoggedIn: true }))
-    //     localStorage.setItem(AUTH_TOKEN, res.data.data.token)
-    //   }
-    // })
   }
 
   useEffect(() => {
@@ -131,16 +132,17 @@ export const SignIn = () => {
         <FormLabel>
           <p style={{ marginBottom: '15px', fontSize: '17px', fontWeight: '600' }}>Guest access if you just want to watch:</p>
           <p>
-            <b>Email:</b> free@samuraijs.com
+            <b>Email:</b> guest@mail.ru
           </p>
           <p>
-            <b>Password:</b> free
+            <b>Password:</b> qwerty
           </p>
         </FormLabel>
       </LoginInfo>
     </LoginWrapper>
   )
 }
+
 const HelpersLink = styled.div`
   display: flex;
   justify-content: space-between;
