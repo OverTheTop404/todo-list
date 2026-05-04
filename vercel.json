@@ -1,9 +1,13 @@
 {
-  "alias": ["board.overthetop404.ru", "kanban.overthetop404.ru"],
+  "alias": ["kanban.overthetop404.ru"],
   "rewrites": [
     {
+      "source": "/auth/callback",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/index.html"
     }
   ],
   "headers": [
