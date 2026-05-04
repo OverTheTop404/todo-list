@@ -86,7 +86,6 @@ export const SignIn = () => {
           <h2>Sign in with</h2>
         </FormLabel>
         <SocOption>
-          asdas
           <SocOptionRow onClick={handleGitHubLogin}>
             <IconSvgSprite iconId="github" width={'25px'} height={'25px'} viewBox={'0 0 20 20'} /> GitHub
           </SocOptionRow>
