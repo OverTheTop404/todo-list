@@ -12,9 +12,10 @@ import { useUpdateTaskMutation, useDeleteTaskMutation } from '@/features/todolis
 type StyledInputProps = {
   taskInfo: TaskSbType
   index: number
+  isDragDisabled?: boolean // Добавляем проп для отключения перетаскивания
 }
 
-export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
+export const TaskRow = ({ taskInfo, index, isDragDisabled = false }: StyledInputProps) => {
   const dispatch = useAppDispatch()
   const { refPopup, showPopup, togglePopup } = usePopup()
   const [updateTask] = useUpdateTaskMutation()
@@ -63,13 +64,23 @@ export const TaskRow = ({ taskInfo, index }: StyledInputProps) => {
   }
 
   return (
-    <Draggable draggableId={taskInfo.id} index={index}>
-      {(provided) => (
+    <Draggable
+      draggableId={taskInfo.id}
+      index={index}
+      isDragDisabled={isDragDisabled} // Отключаем перетаскивание если нужно
+    >
+      {(provided, snapshot) => (
         <StyledRow
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={taskInfo.is_completed ? 'checkedView' : ''}
+          style={{
+            ...provided.draggableProps.style,
+            opacity: snapshot.isDragging ? 0.8 : 1,
+            cursor: isDragDisabled ? 'default' : 'grab', // Меняем курсор
+            //backgroundColor: isDragDisabled ? '#f9f9f9' : '#fff', // Легкий визуальный отклик
+          }}
         >
           {taskInfo.renameStatus ? (
             <TitleWrapper className={'edit'}>
@@ -122,6 +133,7 @@ export const PanelTitle = styled.div`
   display: flex;
   flex-direction: row;
 `
+
 export const SubMenuWrapper = styled.div`
   display: flex;
   justify-content: center;
@@ -143,6 +155,7 @@ export const SubMenuWrapper = styled.div`
     color: #0052cc;
   }
 `
+
 const SubMenu = styled.ul`
   position: absolute;
   top: 100%;
@@ -187,21 +200,23 @@ const SubMenu = styled.ul`
     }
   }
 `
+
 export const LabelText = styled.span`
   font-size: 17px;
   &:hover {
     cursor: pointer;
   }
 `
+
 export const InputLabel = styled.label`
   flex: 0 0 0;
   position: relative;
   top: -50%;
 `
+
 export const StyledRow = styled.li`
   display: flex;
   justify-content: space-between;
-  //line-height: 1.4;
   background: #fff;
   border: 1px solid #ebecf0;
   margin-bottom: 5px;
@@ -209,6 +224,8 @@ export const StyledRow = styled.li`
   font-size: 18px;
   border-radius: 4px;
   position: relative;
+  transition: background-color 0.2s ease;
+
   &.checkedView {
     ${TitleWrapper} {
       color: #aaa;
@@ -230,6 +247,7 @@ export const StyledRow = styled.li`
   &:hover &:before {
     display: none;
   }
+
   ${InputWrapper} {
     flex: 1 1 0;
     input {
@@ -237,12 +255,11 @@ export const StyledRow = styled.li`
       font-size: 17px;
     }
   }
+
   ${TitleWrapper} {
     flex: 1 1 0;
     height: auto;
     min-height: 24px;
-    //position: relative;
-    //top: -1px;
     svg {
       padding: 2px 0 1px;
       margin-left: 2px;
@@ -250,6 +267,7 @@ export const StyledRow = styled.li`
       top: 3px;
     }
   }
+
   .trash {
     color: #bfbfbf;
     &:hover {
@@ -257,10 +275,12 @@ export const StyledRow = styled.li`
       color: red;
     }
   }
+
   &:hover svg {
     opacity: 1;
   }
 `
+
 export const StyledInput = styled.input`
   &[type='checkbox']:checked,
   &[type='checkbox']:not(:checked) {
@@ -270,12 +290,11 @@ export const StyledInput = styled.input`
 
   &[type='checkbox']:checked + label,
   &[type='checkbox']:not(:checked) + label {
-    //display: inline-block;
-    //position: relative;
     padding-left: 28px;
     line-height: 20px;
     cursor: pointer;
   }
+
   &[type='checkbox']:checked + label:before,
   &[type='checkbox']:not(:checked) + label:before {
     content: '';
@@ -292,6 +311,7 @@ export const StyledInput = styled.input`
   &[type='checkbox']:not(:checked) + label:before {
     border-radius: 2px;
   }
+
   &[type='checkbox']:checked + label:after,
   &[type='checkbox']:not(:checked) + label:after {
     content: '';
@@ -317,6 +337,7 @@ export const StyledInput = styled.input`
     -ms-transform: rotate(-45deg);
     transform: rotate(-45deg);
   }
+
   &[type='checkbox']:not(:checked) + label:after {
     opacity: 0;
   }

@@ -5,14 +5,14 @@ import { useAppSelector } from '@/common/hooks/useAppSelector'
 import styled from 'styled-components'
 import { FakeRow } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/FakeRow/FakeRow'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { selectViewTask } from '@/features/todolists/model/utility-slice'
 import type { TodoListType } from '@/features/todolists/api/todoListsApi.types'
 import { changeModeAddTaskAC } from '@/features/todolists/utils/todoUpdateQueryData'
 import { TaskSkeleton } from '@/features/todolists/ui/TodoWorkSpace/TodoColumn/TodoBody/TaskSceleton/TaskSceleton'
 import { EmptyBtn, StyledEmptyBtn } from '@/features/todolists/ui/TodoWorkSpace/TodoSkeleton/TodoSkeleton'
 import { Droppable } from '@hello-pangea/dnd'
 import { useGetTasksQuery } from '@/features/todolists/api/tasksSbApi'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
+import { selectSortDirection, selectViewTask, sortTasksAC, viewTaskAC } from '@/app/app-slice'
 
 type Props = {
   todoInfo: TodoListType
@@ -20,17 +20,14 @@ type Props = {
 
 export const TodoBody = ({ todoInfo }: Props) => {
   const dispatch = useAppDispatch()
-  // const location = useLocation()
-  //const params = useParams()
   const viewTask = useAppSelector(selectViewTask)
+  const sortDirection = useAppSelector(selectSortDirection)
 
   const [firstLoad, setFirstLoad] = useState(true)
 
   useEffect(() => {
     setFirstLoad(false)
   }, [])
-
-  //const needSkip = params.boardId !== todoInfo.board_id
 
   const { data: tasks, isLoading } = useGetTasksQuery(
     { list_id: todoInfo.id },
@@ -39,17 +36,46 @@ export const TodoBody = ({ todoInfo }: Props) => {
     },
   )
 
-  // const [firstLoad, setFirstLoad] = useState(true)
-  //
-  // const boardId = location.pathname.split('/').pop()
-  //
-  // useEffect(() => {
-  //   boardId === todoInfo.board_id ? setFirstLoad(true) : setFirstLoad(true)
-  // }, [boardId])
+  // Проверяем, активны ли фильтры или сортировка
+  const isDraggable = viewTask === 'all' && sortDirection === 'default'
 
-  let filteredTasksCopy = tasks
-  if (viewTask === 'active') filteredTasksCopy = tasks?.filter((item) => item.is_completed === false)
-  if (viewTask === 'completed') filteredTasksCopy = tasks?.filter((item) => item.is_completed === true)
+  // Функция сброса всех фильтров и сортировки
+  const resetToDefault = () => {
+    dispatch(viewTaskAC({ viewTask: 'all' }))
+    dispatch(sortTasksAC({ direction: 'default' }))
+  }
+
+  // Применяем фильтрацию и сортировку с помощью useMemo для оптимизации
+  const processedTasks = useMemo(() => {
+    if (!tasks) return []
+
+    let filtered = [...tasks]
+
+    // Фильтрация
+    if (viewTask === 'active') {
+      filtered = filtered.filter((item) => item.is_completed === false)
+    } else if (viewTask === 'completed') {
+      filtered = filtered.filter((item) => item.is_completed === true)
+    }
+
+    // Сортировка
+    if (sortDirection === 'default') {
+      // Сортировка по position (по умолчанию, для DnD)
+      filtered.sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+    } else if (sortDirection === 'completed-first') {
+      filtered.sort((a, b) => {
+        if (a.is_completed === b.is_completed) return 0
+        return a.is_completed ? -1 : 1
+      })
+    } else if (sortDirection === 'active-first') {
+      filtered.sort((a, b) => {
+        if (a.is_completed === b.is_completed) return 0
+        return a.is_completed ? 1 : -1
+      })
+    }
+
+    return filtered
+  }, [tasks, viewTask, sortDirection])
 
   if (isLoading) {
     return (
@@ -65,11 +91,17 @@ export const TodoBody = ({ todoInfo }: Props) => {
   return (
     <>
       <StyledTodoBody>
-        <Droppable droppableId={todoInfo.id} type="TASK">
-          {(provided) => (
-            <ul ref={provided.innerRef} {...provided.droppableProps}>
-              {filteredTasksCopy?.length ? (
-                filteredTasksCopy.map((task, index) => <TaskRow key={task.id} taskInfo={task} index={index} />)
+        <Droppable droppableId={todoInfo.id} type="TASK" isDropDisabled={!isDraggable}>
+          {(provided, snapshot) => (
+            <ul
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              style={{
+                opacity: snapshot.isDraggingOver ? 0.8 : 1,
+              }}
+            >
+              {processedTasks.length ? (
+                processedTasks.map((task, index) => <TaskRow key={task.id} taskInfo={task} index={index} isDragDisabled={!isDraggable} />)
               ) : (
                 <p style={{ marginBottom: `${todoInfo.addTaskStatus ? '10px' : '0'}` }}>There are no tasks</p>
               )}
@@ -78,6 +110,14 @@ export const TodoBody = ({ todoInfo }: Props) => {
             </ul>
           )}
         </Droppable>
+
+        {/* Показываем сообщение с кнопкой, если DnD отключен */}
+        {!isDraggable && (
+          <DnDDisabledMessage>
+            ⚠️ Drag and drop is disabled when filters or sorting are active.
+            <ResetText onClick={resetToDefault}>Reset to default</ResetText>
+          </DnDDisabledMessage>
+        )}
       </StyledTodoBody>
       <AddNewTaskBtn onClick={() => dispatch(changeModeAddTaskAC({ listId: todoInfo.id, boardId: todoInfo.board_id, status: true }))}>
         <BadgePlus size={15} /> New task
@@ -103,5 +143,26 @@ const AddNewTaskBtn = styled.div`
 
   &:hover {
     cursor: pointer;
+  }
+`
+
+const DnDDisabledMessage = styled.div`
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  color: #856404;
+  padding: 8px 12px;
+  margin: 10px 0;
+  font-size: 12px;
+  border-radius: 4px;
+`
+
+const ResetText = styled.span`
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 6px;
+
+  &:hover {
+    color: #0052cc;
   }
 `

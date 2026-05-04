@@ -5,7 +5,7 @@ import { AppLoader } from '@/common/components/AppLoader/AppLoader'
 import { Modal } from '@/common/components/Modal/Modal'
 import styled from 'styled-components'
 import { type FieldErrors, type SubmitHandler, useForm } from 'react-hook-form'
-import { type CreateBoardInputs, createBoardSchema } from '@/features/boards/lib/schemas'
+import { type CreateBoardFormInputs, createBoardFormSchema } from '@/features/boards/lib/schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { setNoticeAC } from '@/app/app-slice'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
@@ -14,6 +14,7 @@ import { useEffect } from 'react'
 import { toast } from 'react-toastify/unstyled'
 import { useAuthMeQuery } from '@/features/auth/api/sbAuthApi'
 import type { Board } from '@/features/boards/api/boardsApi.types'
+import { useNavigate } from 'react-router'
 
 type Props = {
   closeModal: () => void
@@ -31,6 +32,7 @@ const BOARD_IMAGES = [
 
 export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
   const { data: dataMe } = useAuthMeQuery()
   const [createBoard, { isLoading }] = useCreateBoardMutation()
@@ -40,21 +42,26 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
-  } = useForm<CreateBoardInputs>({
-    defaultValues: { title: board?.title, description: board?.description, image_url: board?.image_url },
-    resolver: zodResolver(createBoardSchema),
+  } = useForm<CreateBoardFormInputs>({
+    defaultValues: {
+      title: board?.title || '',
+      description: board?.description || '',
+      image_url: board?.image_url || BOARD_IMAGES[0].url,
+      navigateToBoard: true,
+    },
+    resolver: zodResolver(createBoardFormSchema),
   })
 
   const handleCloseModal = () => {
     closeModal()
-    //reset()
   }
 
   useEffect(() => {
     for (const key in errors) {
       if (errors.hasOwnProperty(key)) {
-        const errorMessage = (errors as FieldErrors<CreateBoardInputs>)[key as keyof CreateBoardInputs]?.message
+        const errorMessage = (errors as FieldErrors<CreateBoardFormInputs>)[key as keyof CreateBoardFormInputs]?.message
         if (errorMessage) {
           toast.error(errorMessage, {
             autoClose: 2000,
@@ -66,8 +73,9 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
   }, [errors])
 
   const selectedImage = watch('image_url')
+  const navigateToBoard = watch('navigateToBoard')
 
-  const onSubmit: SubmitHandler<CreateBoardInputs> = async (data) => {
+  const onSubmit: SubmitHandler<CreateBoardFormInputs> = async (data) => {
     console.log(data, board)
 
     if (data.title === board?.title && data.description === board?.description && data.image_url === board?.image_url) {
@@ -76,12 +84,32 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
     }
 
     try {
-      board
-        ? await updateBoard({ id: board.id, updates: data }).unwrap()
-        : await createBoard({ user_id: dataMe?.user.id!, title: data.title, description: data.description, image_url: data.image_url }).unwrap()
+      let result
+      if (board) {
+        const { navigateToBoard, ...updateData } = data
+        await updateBoard({ id: board.id, updates: updateData }).unwrap()
+        dispatch(setNoticeAC({ noticeMessage: `«${data.title}» board success updated`, noticeType: 'success' }))
+        reset()
+      } else {
+        const { navigateToBoard, ...boardData } = data
+        result = await createBoard({
+          user_id: dataMe?.user.id!,
+          ...boardData,
+        }).unwrap()
+
+        dispatch(setNoticeAC({ noticeMessage: `«${data.title}» board success created`, noticeType: 'success' }))
+        reset({
+          title: '',
+          description: '',
+          image_url: BOARD_IMAGES[0].url,
+        })
+        // Перенаправляем только если чекбокс отмечен
+        if (data.navigateToBoard && result) {
+          navigate(`/board/${result.id}`, { state: { pageName: result.title } })
+        }
+      }
+
       closeModal()
-      dispatch(setNoticeAC({ noticeMessage: `«${data.title}» board success ${board ? 'updated' : 'created'}`, noticeType: 'success' }))
-      //reset()
     } catch (error: any) {
       dispatch(setNoticeAC({ noticeMessage: error.message, noticeType: 'error' }))
     }
@@ -104,6 +132,7 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
               />
               {errors.title && <span className={s.errorMessage}>{errors.title.message}</span>}
             </FormGroup>
+
             <FormGroup>
               <NotebookPen size={18} />
               <TextAreaField
@@ -115,6 +144,7 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
               />
               {errors.description && <span className={s.errorMessage}>{errors.description.message}</span>}
             </FormGroup>
+
             <FormGroup>
               <label>Choose board image</label>
               <ImageRadioGroup>
@@ -131,11 +161,23 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
                 ))}
                 <BoardUpload>
                   <ImageUp size={30} />
-                  <span>Upload image ( in dev)</span>
+                  <span>Upload image (in dev)</span>
                 </BoardUpload>
               </ImageRadioGroup>
               {errors.image_url && <span className={s.errorMessage}>{errors.image_url.message}</span>}
             </FormGroup>
+
+            {/* Добавляем чекбокс только для создания новой доски */}
+            {!board && (
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <CheckboxInput type="checkbox" {...register('navigateToBoard')} />
+                  <CheckboxCustom $checked={navigateToBoard}>{navigateToBoard && <Checkmark>✓</Checkmark>}</CheckboxCustom>
+                  <CheckboxText>Navigate to board after creation</CheckboxText>
+                </CheckboxLabel>
+              </CheckboxGroup>
+            )}
+
             <FormButton type="submit">{board ? 'Save changes' : 'Create board'}</FormButton>
           </FormFieldWrapper>
         </form>
@@ -150,6 +192,7 @@ const ModalContentInner = styled.div`
     margin-bottom: 10px;
   }
 `
+
 const ImageRadioGroup = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -191,6 +234,7 @@ const BoardImage = styled.img`
   object-fit: cover;
   border-radius: 4px;
 `
+
 const BoardUpload = styled.div`
   display: flex;
   justify-content: center;
@@ -247,4 +291,55 @@ const TextAreaField = styled.textarea`
   &::placeholder {
     color: #ccc;
   }
+`
+
+const CheckboxGroup = styled.div`
+  margin: 15px 0;
+`
+
+const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+`
+
+const CheckboxInput = styled.input`
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+`
+
+const CheckboxCustom = styled.div<{ $checked: boolean }>`
+  width: 20px;
+  height: 20px;
+  border: 2px solid ${(props) => (props.$checked ? '#4f46e5' : '#ccc')};
+  border-radius: 4px;
+  margin-right: 10px;
+  background: ${(props) => (props.$checked ? '#4f46e5' : 'transparent')};
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ${CheckboxLabel}:hover & {
+    border-color: #4f46e5;
+  }
+`
+
+const Checkmark = styled.span`
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 0 !important;
+`
+
+const CheckboxText = styled.span`
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 0 !important;
 `

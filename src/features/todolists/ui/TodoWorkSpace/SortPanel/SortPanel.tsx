@@ -1,26 +1,33 @@
-import { ArrowDown01, ArrowDown10, ArrowDownWideNarrow, CircleFadingPlus, Filter, SquareCheckBig, SquareDashed, SquareMenu } from 'lucide-react'
+import {
+  ArrowDown01,
+  ArrowDown10,
+  ArrowDownWideNarrow,
+  CircleFadingPlus,
+  Filter,
+  SquareCheckBig,
+  SquareDashed,
+  SquareMenu,
+  Repeat,
+} from 'lucide-react' // Добавляем Repeat иконку
 import styled from 'styled-components'
-import React, { useState } from 'react'
-import { sortTasksAC } from '@/features/todolists/model/tasks-slice.ts'
+import React from 'react'
+import { sortTasksAC } from '@/app/app-slice'
 import { useAppDispatch } from '@/common/hooks/useAppDispatch'
-import { selectViewTask, viewTaskAC } from '@/features/todolists/model/utility-slice'
 import { useAppSelector } from '@/common/hooks/useAppSelector'
 import { FakeColumn } from '@/features/todolists/ui/TodoWorkSpace/SortPanel/FakeColumn/FakeColumn'
-import { modeAddTodoAC, selectHasModeAddTodo } from '@/app/app-slice'
+import { modeAddTodoAC, selectHasModeAddTodo, selectSortDirection, selectViewTask, viewTaskAC } from '@/app/app-slice'
 import { usePopup } from '@/common/hooks/usePopup'
 
 export const SortPanel = () => {
   const dispatch = useAppDispatch()
   const viewTask = useAppSelector(selectViewTask)
   const hasTodoMode = useAppSelector(selectHasModeAddTodo)
+  const sortDirection = useAppSelector(selectSortDirection)
   const { refPopup: refSort, showPopup: sortPopup, togglePopup: setSortPopup } = usePopup()
   const { refPopup: refFilter, showPopup: filterPopup, togglePopup: setFilterPopup } = usePopup()
 
-  const [activeSort, setActiveSort] = useState(true)
-
-  const sortHandler = (direction: boolean) => {
-    setActiveSort(direction)
-    dispatch(sortTasksAC({ flag: direction }))
+  const sortHandler = (direction: 'default' | 'completed-first' | 'active-first') => {
+    dispatch(sortTasksAC({ direction }))
   }
 
   const stopHorizontalScrollOnClickColumn = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -41,11 +48,14 @@ export const SortPanel = () => {
           </PanelBtn>
           {sortPopup && (
             <SubMenu ref={refSort}>
-              <li className={activeSort ? 'active' : ''} onClick={() => sortHandler(true)}>
-                <ArrowDown10 size={20} /> Firstly is done
+              <li className={sortDirection === 'default' ? 'active' : ''} onClick={() => sortHandler('default')}>
+                <Repeat size={20} /> Default (by position)
               </li>
-              <li className={!activeSort ? 'active' : ''} onClick={() => sortHandler(false)}>
-                <ArrowDown01 size={20} /> Firstly isn`t done
+              <li className={sortDirection === 'active-first' ? 'active' : ''} onClick={() => sortHandler('active-first')}>
+                <ArrowDown10 size={20} /> Active first (not done)
+              </li>
+              <li className={sortDirection === 'completed-first' ? 'active' : ''} onClick={() => sortHandler('completed-first')}>
+                <ArrowDown01 size={20} /> Completed first
               </li>
             </SubMenu>
           )}

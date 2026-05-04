@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { tasksReducer, tasksSlice } from '@/features/todolists/model/tasks-slice'
 import { appReducer, appSlice } from './app-slice.ts'
-import { utilityReducer, utilitySlice } from '@/features/todolists/model/utility-slice'
+//import { utilityReducer, utilitySlice } from '@/features/todolists/model/utility-slice'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { baseApi } from '@/app/baseApi'
 import { supabaseApi } from '@/app/supabaseApi'
@@ -13,7 +13,7 @@ export const store = configureStore({
   reducer: {
     [tasksSlice.name]: tasksReducer,
     [appSlice.name]: appReducer,
-    [utilitySlice.name]: utilityReducer,
+    //[utilitySlice.name]: utilityReducer,
     [baseApi.reducerPath]: baseApi.reducer,
     [supabaseApi.reducerPath]: supabaseApi.reducer,
   },

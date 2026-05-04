@@ -42,7 +42,7 @@ export const BoardCard = ({ data: board }: Props) => {
   return (
     <>
       <Board style={{ backgroundImage: `url(${board.image_url})`, backgroundSize: 'cover' }}>
-        <NavLink to={`/board/${board.id}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}>
+        <NavLink to={`/board/${board.id}`} state={{ pageName: board.title }} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}>
           <span>{board.title}</span>
         </NavLink>
         <PanelTitle>

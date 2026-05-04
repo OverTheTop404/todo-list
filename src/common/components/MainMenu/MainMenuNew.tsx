@@ -18,6 +18,8 @@ import React, { useState } from 'react'
 import { NavLink } from 'react-router'
 import { IconSvgSprite } from '@/common/components/IconSvgSprite/IconSvgSprite'
 import { useGetBoardsQuery } from '@/features/boards/api/boardsApi'
+import { useModal } from '@/common/hooks/useModal'
+import { ModalBoard } from '@/pages/dashboard/ui/ModalBoard/ModalBoard'
 
 const colors = ['#f5ae10', '#1363da', '#ff3737', '#1ac517', '#b210f5']
 
@@ -28,10 +30,12 @@ type MenuItem = {
   image?: string
   rightInfo?: React.ReactNode
   subItems?: MenuItem[]
+  onClick?: () => void
 }
 
 export const MainMenuNew = () => {
   const { data: dataBoard } = useGetBoardsQuery()
+  const { isOpen, openModal, closeModal } = useModal()
 
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({
     Boards: true,
@@ -40,6 +44,10 @@ export const MainMenuNew = () => {
 
   const toggleExpand = (title: string) => {
     setExpandedItems((prev) => ({ ...prev, [title]: !prev[title] }))
+  }
+
+  const handleCreateBoardClick = () => {
+    openModal()
   }
 
   const menuConfig = {
@@ -65,7 +73,11 @@ export const MainMenuNew = () => {
         icon: <BriefcaseBusiness size={20} />,
         rightInfo: <ChevronDown size={20} />,
         subItems: [
-          { title: 'Create new board', icon: <Plus size={20} /> },
+          {
+            title: 'Create new board',
+            icon: <Plus size={20} />,
+            onClick: handleCreateBoardClick,
+          },
           ...(dataBoard ?? []).map((board) => ({
             title: board.title,
             link: `/board/${board.id}`,
@@ -100,6 +112,14 @@ export const MainMenuNew = () => {
     const isExpanded = expandedItems[item.title]
     const listItemClass = `${styles.listItem} ${isSubItem ? styles.subItem : ''}`
 
+    const handleClick = () => {
+      if (item.onClick) {
+        item.onClick()
+      } else if (hasSubItems) {
+        toggleExpand(item.title)
+      }
+    }
+
     return (
       <div key={`${item.title}-${index}`}>
         {item.link ? (
@@ -109,7 +129,7 @@ export const MainMenuNew = () => {
             </li>
           </NavLink>
         ) : (
-          <li className={listItemClass} onClick={() => hasSubItems && toggleExpand(item.title)}>
+          <li className={listItemClass} onClick={handleClick}>
             <ListItemContent item={item} index={index} />
           </li>
         )}
@@ -142,16 +162,20 @@ export const MainMenuNew = () => {
   )
 
   return (
-    <div className={styles.menuWrapper}>
-      <div className={styles.topPanel}>
-        <a className={styles.logo} href="https://rocketweb.pro" target="_blank" rel="noreferrer">
-          <IconSvgSprite iconId="rocketWebFull" width="100%" height="45px" viewBox="0 0 1830 470" />
-        </a>
+    <>
+      <div className={styles.menuWrapper}>
+        <div className={styles.topPanel}>
+          <a className={styles.logo} href="https://rocketweb.pro" target="_blank" rel="noreferrer">
+            <IconSvgSprite iconId="rocketWebFull" width="100%" height="45px" viewBox="0 0 1830 470" />
+          </a>
 
-        <ul>{menuConfig.topMenu.map((item, index) => renderMenuItem(item, index))}</ul>
+          <ul>{menuConfig.topMenu.map((item, index) => renderMenuItem(item, index))}</ul>
+        </div>
+
+        <ul>{menuConfig.bottomMenu.map((item, index) => renderMenuItem(item, index))}</ul>
       </div>
 
-      <ul>{menuConfig.bottomMenu.map((item, index) => renderMenuItem(item, index))}</ul>
-    </div>
+      <ModalBoard closeModal={closeModal} isOpen={isOpen} />
+    </>
   )
 }
