@@ -165,7 +165,7 @@ export const MainMenuNew = () => {
     <>
       <div className={styles.menuWrapper}>
         <div className={styles.topPanel}>
-          <a className={styles.logo} href="https://rocketweb.pro" target="_blank" rel="noreferrer">
+          <a className={styles.logo} href="/" rel="noreferrer">
             <IconSvgSprite iconId="rocketWebFull" width="100%" height="45px" viewBox="0 0 1830 470" />
           </a>
 
