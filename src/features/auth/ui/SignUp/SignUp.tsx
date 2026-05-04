@@ -79,9 +79,9 @@ export const SignUp = () => {
           <SocOptionRow>
             <IconSvgSprite iconId="github" width={'25px'} height={'25px'} viewBox={'0 0 20 20'} /> GitHub
           </SocOptionRow>
-          <SocOptionRow>
-            <IconSvgSprite iconId="google" width={'25px'} height={'25px'} viewBox={'0 0 754 768'} /> Google
-          </SocOptionRow>
+          {/*<SocOptionRow>*/}
+          {/*  <IconSvgSprite iconId="google" width={'25px'} height={'25px'} viewBox={'0 0 754 768'} /> Google*/}
+          {/*</SocOptionRow>*/}
         </SocOption>
         <OptionDelimiter>
           <hr />
