@@ -92,14 +92,8 @@ export const TodoBody = ({ todoInfo }: Props) => {
     <>
       <StyledTodoBody>
         <Droppable droppableId={todoInfo.id} type="TASK" isDropDisabled={!isDraggable}>
-          {(provided, snapshot) => (
-            <ul
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              style={{
-                opacity: snapshot.isDraggingOver ? 0.8 : 1,
-              }}
-            >
+          {(provided) => (
+            <ul ref={provided.innerRef} {...provided.droppableProps}>
               {processedTasks.length ? (
                 processedTasks.map((task, index) => <TaskRow key={task.id} taskInfo={task} index={index} isDragDisabled={!isDraggable} />)
               ) : (

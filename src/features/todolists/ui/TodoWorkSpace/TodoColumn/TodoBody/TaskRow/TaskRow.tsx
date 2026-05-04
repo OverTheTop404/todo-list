@@ -64,12 +64,8 @@ export const TaskRow = ({ taskInfo, index, isDragDisabled = false }: StyledInput
   }
 
   return (
-    <Draggable
-      draggableId={taskInfo.id}
-      index={index}
-      isDragDisabled={isDragDisabled} // Отключаем перетаскивание если нужно
-    >
-      {(provided, snapshot) => (
+    <Draggable draggableId={taskInfo.id} index={index} isDragDisabled={isDragDisabled}>
+      {(provided) => (
         <StyledRow
           ref={provided.innerRef}
           {...provided.draggableProps}
@@ -77,9 +73,7 @@ export const TaskRow = ({ taskInfo, index, isDragDisabled = false }: StyledInput
           className={taskInfo.is_completed ? 'checkedView' : ''}
           style={{
             ...provided.draggableProps.style,
-            opacity: snapshot.isDragging ? 0.8 : 1,
-            cursor: isDragDisabled ? 'default' : 'grab', // Меняем курсор
-            //backgroundColor: isDragDisabled ? '#f9f9f9' : '#fff', // Легкий визуальный отклик
+            cursor: isDragDisabled ? 'default' : 'grab',
           }}
         >
           {taskInfo.renameStatus ? (

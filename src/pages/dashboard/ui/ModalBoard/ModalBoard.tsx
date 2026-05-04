@@ -46,16 +46,43 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
     formState: { errors },
   } = useForm<CreateBoardFormInputs>({
     defaultValues: {
-      title: board?.title || '',
-      description: board?.description || '',
-      image_url: board?.image_url || BOARD_IMAGES[0].url,
-      navigateToBoard: true,
+      title: '',
+      description: '',
+      image_url: BOARD_IMAGES[0].url,
+      navigateToBoard: false,
     },
     resolver: zodResolver(createBoardFormSchema),
   })
 
+  // Обновляем форму при изменении board (когда открываем модалку на редактирование)
+  useEffect(() => {
+    if (isOpen && board) {
+      reset({
+        title: board.title,
+        description: board.description || '',
+        image_url: board.image_url || BOARD_IMAGES[0].url,
+        navigateToBoard: false,
+      })
+    } else if (isOpen && !board) {
+      // Сбрасываем форму при создании новой доски
+      reset({
+        title: '',
+        description: '',
+        image_url: BOARD_IMAGES[0].url,
+        navigateToBoard: false,
+      })
+    }
+  }, [isOpen, board, reset])
+
   const handleCloseModal = () => {
     closeModal()
+    // Опционально: сбрасываем форму при закрытии
+    reset({
+      title: '',
+      description: '',
+      image_url: BOARD_IMAGES[0].url,
+      navigateToBoard: false,
+    })
   }
 
   useEffect(() => {
@@ -76,8 +103,6 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
   const navigateToBoard = watch('navigateToBoard')
 
   const onSubmit: SubmitHandler<CreateBoardFormInputs> = async (data) => {
-    console.log(data, board)
-
     if (data.title === board?.title && data.description === board?.description && data.image_url === board?.image_url) {
       closeModal()
       return
@@ -86,11 +111,12 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
     try {
       let result
       if (board) {
-        const { navigateToBoard, ...updateData } = data
+        // Обновляем доску
+        const { navigateToBoard: _, ...updateData } = data
         await updateBoard({ id: board.id, updates: updateData }).unwrap()
         dispatch(setNoticeAC({ noticeMessage: `«${data.title}» board success updated`, noticeType: 'success' }))
-        reset()
       } else {
+        // Создаем доску
         const { navigateToBoard, ...boardData } = data
         result = await createBoard({
           user_id: dataMe?.user.id!,
@@ -98,13 +124,9 @@ export const ModalBoard = ({ closeModal, isOpen, board }: Props) => {
         }).unwrap()
 
         dispatch(setNoticeAC({ noticeMessage: `«${data.title}» board success created`, noticeType: 'success' }))
-        reset({
-          title: '',
-          description: '',
-          image_url: BOARD_IMAGES[0].url,
-        })
+
         // Перенаправляем только если чекбокс отмечен
-        if (data.navigateToBoard && result) {
+        if (navigateToBoard && result) {
           navigate(`/board/${result.id}`, { state: { pageName: result.title } })
         }
       }
