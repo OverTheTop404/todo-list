@@ -32,7 +32,22 @@ export const Dashboard = () => {
   }, [isAuthenticated, refetch])
 
   if (isAuthLoading || (isAuthenticated && isBoardsLoading)) {
-    return <PageWrapper>{isBoardsLoading && <AppLoader forceMode bg={'rgba(0, 0, 0, 0.5)'} />}</PageWrapper>
+    return (
+      <PageWrapper>
+        {isBoardsLoading && <AppLoader forceMode bg={'rgba(0, 0, 0, 0.5)'} />}
+        <SystemInform>
+          <UserPen /> Demo version, for personal use only!
+        </SystemInform>
+        <h1>Your boards</h1>
+        <YourBoardsWrapper>
+          <CreateBoard onClick={openModal}>
+            <CircleFadingPlus size={50} />
+            Create new board
+          </CreateBoard>
+          {dataBoard?.map((board) => <BoardCard key={board.id} data={board} />)}
+        </YourBoardsWrapper>
+      </PageWrapper>
+    )
   }
 
   return (
