@@ -12,12 +12,12 @@ import { IconSvgSprite } from '@/common/components/IconSvgSprite/IconSvgSprite'
 import { Path } from '@/common/routing/Routing'
 import { useLoginMutation } from '../../api/sbAuthApi'
 import { loaderStatusAC, setIsLoggedIn, setNoticeAC } from '@/app/app-slice'
-import { Link, useNavigate } from 'react-router' // Добавляем useNavigate
-import { supabaseApi } from '@/app/supabaseApi' // Добавляем baseApi
+import { Link, useNavigate } from 'react-router'
+import { supabaseApi } from '@/app/supabaseApi'
 
 export const SignIn = () => {
   const dispatch = useAppDispatch()
-  const navigate = useNavigate() // Добавляем navigate
+  const navigate = useNavigate()
 
   const {
     register,
@@ -38,13 +38,11 @@ export const SignIn = () => {
         password: data.password,
       }).unwrap()
 
-      // Инвалидируем все теги после успешного логина
       dispatch(supabaseApi.util.invalidateTags(['Board', 'Auth']))
 
       dispatch(setNoticeAC({ noticeMessage: 'Success Login', noticeType: 'info' }))
       dispatch(setIsLoggedIn({ isLoggedIn: true }))
 
-      // Перенаправляем на дашборд
       navigate('/dashboard')
     } catch (error: any) {
       dispatch(setNoticeAC({ noticeMessage: error.message, noticeType: 'error' }))

@@ -9,14 +9,19 @@ import { BoardCard } from '@/pages/dashboard/ui/BoardCard/BoardCard'
 import { ModalBoard } from '@/pages/dashboard/ui/ModalBoard/ModalBoard'
 import { useAuthMeQuery } from '@/features/auth/api/sbAuthApi'
 import { useEffect } from 'react'
+import { AppLoader } from '@/common/components/AppLoader/AppLoader'
 
 export const Dashboard = () => {
   const { isOpen, openModal, closeModal } = useModal()
 
-  const { data: userData } = useAuthMeQuery()
+  const { data: userData, isLoading: isAuthLoading } = useAuthMeQuery()
   const isAuthenticated = !!userData?.user
 
-  const { data: dataBoard, refetch } = useGetBoardsQuery(undefined, {
+  const {
+    data: dataBoard,
+    refetch,
+    isLoading: isBoardsLoading,
+  } = useGetBoardsQuery(undefined, {
     skip: !isAuthenticated,
   })
 
@@ -25,6 +30,10 @@ export const Dashboard = () => {
       refetch()
     }
   }, [isAuthenticated, refetch])
+
+  if (isAuthLoading || (isAuthenticated && isBoardsLoading)) {
+    return <PageWrapper>{isBoardsLoading && <AppLoader forceMode bg={'rgba(0, 0, 0, 0.5)'} />}</PageWrapper>
+  }
 
   return (
     <PageWrapper>
