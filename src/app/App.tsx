@@ -8,7 +8,7 @@ import { loaderStatusAC, setIsLoggedIn } from '@/app/app-slice'
 import { useAuthMeQuery } from '@/features/auth/api/sbAuthApi'
 import { useParams } from 'react-router'
 import { useGetBoardByIdQuery } from '@/features/boards/api/boardsApi'
-
+//rebuild
 export const App = () => {
   const dispatch = useAppDispatch()
   const params = useParams()
